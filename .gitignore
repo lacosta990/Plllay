@@ -16,3 +16,4 @@ captures/
 .cxx
 keystore.properties
 gradle.properties.local
+app/release/app/release/
