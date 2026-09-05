@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Когда поле в фокусе (активно) – белый текст -->
+    <item android:state_focused="true" android:color="#FFFFFF" />
+    <!-- В остальных случаях – серый текст -->
+    <item android:color="#888888" />
+</selector>

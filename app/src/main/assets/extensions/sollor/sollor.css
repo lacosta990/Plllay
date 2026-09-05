@@ -1,0 +1,382 @@
+/* === Базовые стили === */
+body {
+  margin: 0;
+  background: #111;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  font-family: system-ui, sans-serif;
+}
+
+#container {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.plyr {
+  width: 100%;
+  height: 100%;
+}
+
+/* === Контролы (overlay) === */
+.plyr__controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 15;
+  transition: opacity 0.4s ease-in-out !important;
+  transform: none !important;
+  gap: 8px;
+}
+
+.plyr--hide-controls .plyr__controls {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* === Кнопка заставки (overlaid) – только до первого воспроизведения === */
+.plyr__control--overlaid {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s, background 0.3s;
+}
+.plyr__control--overlaid svg {
+  width: 40px;
+  height: 40px;
+  fill: #fff;
+}
+.plyr__control--overlaid:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: #fff;
+}
+.plyr--started .plyr__control--overlaid {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ============================================================ */
+/* ОБЩИЕ СТИЛИ ДЛЯ ЭЛЕМЕНТОВ УПРАВЛЕНИЯ */
+/* ============================================================ */
+
+.plyr__progress {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.plyr__controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.plyr__controls-left,
+.plyr__controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.plyr__controls .plyr__control {
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.plyr__time {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.plyr__volume {
+  display: none; /* не используем на десктопе, оставляем только кнопку Mute */
+}
+
+/* Центральная кнопка Play (для мобилок) – по умолчанию скрыта */
+.plyr__center-play {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 25;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.plyr__center-play svg {
+  width: 32px;
+  height: 32px;
+  fill: #fff;
+}
+
+/* Вертикальный скраббер – по умолчанию скрыт, показываем только на десктопе и в ландшафтном полноэкранном режиме */
+.plyr__vertical-scrub {
+  display: none;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 70%; /* ограничиваем высоту, чтобы не перекрывать элементы */
+  width: 96px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding-right: 8px;
+  z-index: 20;
+  touch-action: none;
+  user-select: none;
+  cursor: ns-resize;
+  /* Без фона, бордера и блюра */
+}
+
+/* Внутренние элементы скраббера */
+.plyr__vertical-scrub__center {
+  position: relative;
+  width: 14px;
+  height: 100%;
+  overflow: hidden;
+}
+.plyr__vertical-scrub__tape {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.plyr__vertical-scrub__tick {
+  position: absolute;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 2px;
+}
+.plyr__vertical-scrub__tick--dim {
+  opacity: 0.25;
+}
+.plyr__vertical-scrub__marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 4px;
+  background: #ffd400;
+  border-radius: 3px;
+  pointer-events: none;
+}
+.plyr__vertical-scrub__tooltip {
+  position: absolute;
+  right: 0;
+  top: calc(-100% - 8px);
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #00e5ff;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  display: none;
+}
+.plyr__vertical-scrub:hover .plyr__vertical-scrub__tooltip {
+  display: block;
+}
+
+/* ============================================================ */
+/* ДЕСКТОП (≥768px) – стандартное расположение */
+/* ============================================================ */
+@media (min-width: 768px) {
+  .plyr__controls {
+    padding: 16px 24px;
+    gap: 8px;
+  }
+
+  .plyr__progress {
+    order: 0;
+  }
+
+  .plyr__controls-row {
+    order: 1;
+    flex-wrap: nowrap;
+  }
+
+  .plyr__vertical-scrub {
+    display: flex !important;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 70%;
+  }
+
+  .plyr__center-play {
+    display: none !important;
+  }
+}
+
+/* ============================================================ */
+/* МОБИЛКИ (<768px) – портретная ориентация (по умолчанию) */
+/* ============================================================ */
+@media (max-width: 767px) and (orientation: portrait) {
+  .plyr__controls {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .plyr__progress {
+    order: 2;
+  }
+
+  .plyr__controls-row {
+    order: 1;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .plyr__center-play {
+    display: flex !important;
+  }
+
+  .plyr__vertical-scrub {
+    display: none !important;
+  }
+
+  .plyr__controls-left .plyr__control[data-plyr="play"],
+  .plyr__controls-left .plyr__control[data-plyr="mute"] {
+    display: none !important;
+  }
+
+  .plyr__controls .plyr__control[data-plyr="restart"],
+  .plyr__controls .plyr__control[data-plyr="rewind"],
+  .plyr__controls .plyr__control[data-plyr="fast-forward"] {
+    display: none !important;
+  }
+
+  .plyr__time {
+    font-size: 12px;
+  }
+
+  .plyr__controls-right {
+    gap: 6px;
+  }
+}
+
+/* ============================================================ */
+/* ЛАНДШАФТНЫЙ ПОЛНОЭКРАННЫЙ РЕЖИМ НА МОБИЛКАХ */
+/* ============================================================ */
+@media (orientation: landscape) {
+  .is-fullscreen.is-touch .plyr__controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  /* Прогресс-бар – внизу на всю ширину */
+  .is-fullscreen.is-touch .plyr__progress {
+    order: 2;
+    flex: 0 0 100%;
+    margin-top: auto;
+  }
+
+  /* Строка кнопок – становится вертикальной колонкой справа от скраббера */
+  .is-fullscreen.is-touch .plyr__controls-row {
+    order: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+    width: auto;
+  }
+
+  /* Левая часть – скрываем всё, кроме Mute, и делаем колонкой */
+  .is-fullscreen.is-touch .plyr__controls-left {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .is-fullscreen.is-touch .plyr__controls-left .plyr__control[data-plyr="play"],
+  .is-fullscreen.is-touch .plyr__controls-left .plyr__time {
+    display: none !important;
+  }
+  .is-fullscreen.is-touch .plyr__controls-left .plyr__control[data-plyr="mute"] {
+    display: flex !important;
+  }
+
+  /* Правая часть – колонкой */
+  .is-fullscreen.is-touch .plyr__controls-right {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .is-fullscreen.is-touch .plyr__controls-right .plyr__control {
+    display: flex !important;
+  }
+
+  /* Центральная кнопка Play – скрыта */
+  .is-fullscreen.is-touch .plyr__center-play {
+    display: none !important;
+  }
+
+  /* Скраббер – слева, на всю высоту */
+  .is-fullscreen.is-touch .plyr__vertical-scrub {
+    display: flex !important;
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    height: 100%;
+    width: 80px;
+    flex: 0 0 auto;
+    order: 0;
+    margin-right: 12px;
+  }
+
+  /* Скрываем лишние кнопки, которые могут быть в других местах */
+  .is-fullscreen.is-touch .plyr__controls .plyr__control[data-plyr="restart"],
+  .is-fullscreen.is-touch .plyr__controls .plyr__control[data-plyr="rewind"],
+  .is-fullscreen.is-touch .plyr__controls .plyr__control[data-plyr="fast-forward"] {
+    display: none !important;
+  }
+}

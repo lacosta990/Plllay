@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. Убираем ActionBar -->
+    <style name="Theme.JoyWithSollor" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Status bar color (цвет системного статус-бара сверху) -->
+        <item name="android:statusBarColor">#202020</item>
+        <!-- Цвет навигационного бара (снизу) -->
+        <item name="android:navigationBarColor">#202020</item>
+    </style>
+</resources>

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+  "name": "Sollor Player",
+  "version": "1.0",
+  "description": "Inject custom Plyr player from external source",
+  "applications": {
+    "gecko": {
+      "id": "sollor@example.com"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["loader.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "<all_urls>"
+  ]
+}

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Plllay</string>
+    <string name="enter_url_hint">Enter URL</string>
+    <string name="back">Back</string>
+    <string name="add_tab">New tab</string>
+    <string name="tabs">Tabs</string>
+</resources>

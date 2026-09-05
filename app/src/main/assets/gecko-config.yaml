@@ -1,0 +1,3 @@
+prefs:
+  dom.screenorientation.allow-lock: true
+  dom.screenorientation.allow-lock.pending-request-compat: true
