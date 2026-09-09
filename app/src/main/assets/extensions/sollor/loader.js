@@ -6,7 +6,11 @@
 
     // ---- Конфигурация ----
     const CSS_URL = 'https://storage.yandexcloud.net/sollor/injection/sollor.css';
-    const JS_URL = 'https://storage.yandexcloud.net/sollor/injection/sollor.js';
+    // ✅ Исправлено: массив URL-ов для всех JS-скриптов
+    const JS_URLS = [
+        'https://storage.yandexcloud.net/sollor/injection/sollor.js',
+        'https://storage.yandexcloud.net/sollor/injection/cleaner.js'
+    ];
     const CACHE_NAME = 'sollor-cache-v1'; // ⬅️ Меняйте при обновлении файлов
 
     // ============================================================
@@ -57,8 +61,6 @@
             console.log('[Sollor] 🎨 CSS вставлен');
         } else {
             try {
-                // Используем eval для выполнения в глобальном контексте (чтобы код мог объявлять функции и переменные)
-                // Но безопаснее использовать Function constructor или script.textContent
                 const script = document.createElement('script');
                 script.textContent = text;
                 document.head.appendChild(script);
@@ -99,15 +101,13 @@
 
         function isVideoLandscape(video) {
             if (!video) return false;
-            // Приоритет – метаданные видео
             if (video.videoWidth && video.videoHeight) {
                 return video.videoWidth > video.videoHeight;
             }
-            // CSS-размеры (если метаданные ещё не загружены)
             return video.clientWidth > video.clientHeight;
         }
 
-        // Отслеживаем Fullscreen
+        // Fullscreen events
         var fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'];
         fullscreenEvents.forEach(function(eventName) {
             document.addEventListener(eventName, function() {
@@ -134,7 +134,7 @@
             });
         });
 
-        // Если страница уже в Fullscreen при загрузке
+        // Если уже в fullscreen
         if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
             var fsElement = document.fullscreenElement || document.webkitFullscreenElement || document.body;
             var video = fsElement.querySelector('video') || document.querySelector('video');
@@ -163,11 +163,13 @@
     // ============================================================
     // 3. ЗАПУСК
     // ============================================================
-    // Сначала загружаем ресурсы
+    // Загружаем CSS
     loadFromCacheOrNetwork(CSS_URL, true);
-    loadFromCacheOrNetwork(JS_URL, false);
 
-    // Затем настраиваем ориентацию после того, как DOM готов
+    // ✅ Загружаем все JS-файлы из массива (последовательно, в указанном порядке)
+    JS_URLS.forEach(url => loadFromCacheOrNetwork(url, false));
+
+    // Настраиваем ориентацию после загрузки DOM
     if (document.readyState === 'complete') {
         setupOrientationControl();
     } else {
