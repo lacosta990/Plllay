@@ -4,14 +4,18 @@
 (function() {
     console.log('[Sollor] loader.js выполняется');
 
+    // ⬅️ Будим background.js, чтобы он поднял native-порт
+    try {
+        browser.runtime.sendMessage({ type: 'PING' });
+    } catch (e) {}
+
     // ---- Конфигурация ----
     const CSS_URL = 'https://storage.yandexcloud.net/sollor/injection/sollor.css';
-    // ✅ Исправлено: массив URL-ов для всех JS-скриптов
     const JS_URLS = [
         'https://storage.yandexcloud.net/sollor/injection/sollor.js',
         'https://storage.yandexcloud.net/sollor/injection/cleaner.js'
     ];
-    const CACHE_NAME = 'sollor-cache-v1'; // ⬅️ Меняйте при обновлении файлов
+    const CACHE_NAME = 'sollor-cache-v3'; // ⬅️ обновлено для сброса кэша
 
     // ============================================================
     // 1. ЗАГРУЗКА CSS/JS С КЭШИРОВАНИЕМ
@@ -30,14 +34,12 @@
             console.warn('[Sollor] ⚠️ Ошибка чтения кэша:', e);
         }
 
-        // Нет в кэше – загружаем из сети
         console.log('[Sollor] 🌐 Загружаем из сети:', url);
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error('HTTP ' + response.status);
             const text = await response.text();
 
-            // Сохраняем в кэш
             try {
                 const cache = await caches.open(CACHE_NAME);
                 cache.put(url, new Response(text, {
@@ -72,7 +74,7 @@
     }
 
     // ============================================================
-    // 2. УПРАВЛЕНИЕ ОРИЕНТАЦИЕЙ (ОТПРАВКА СООБЩЕНИЙ В NATIVE)
+    // 2. УПРАВЛЕНИЕ ОРИЕНТАЦИЕЙ
     // ============================================================
     function setupOrientationControl() {
         console.log('[Sollor] 🔄 setupOrientationControl запущен');
@@ -87,7 +89,6 @@
                         console.warn('[Sollor] ⚠️ Ошибка отправки сообщения:', err);
                     });
                 } else {
-                    // fallback
                     window.postMessage({
                         type: "SCREEN_ORIENTATION_CONTROL",
                         action: action
@@ -107,7 +108,6 @@
             return video.clientWidth > video.clientHeight;
         }
 
-        // Fullscreen events
         var fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'];
         fullscreenEvents.forEach(function(eventName) {
             document.addEventListener(eventName, function() {
@@ -134,7 +134,6 @@
             });
         });
 
-        // Если уже в fullscreen
         if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
             var fsElement = document.fullscreenElement || document.webkitFullscreenElement || document.body;
             var video = fsElement.querySelector('video') || document.querySelector('video');
@@ -143,7 +142,6 @@
             }
         }
 
-        // Для плееров с кастомными кнопками (Plyr)
         document.addEventListener('click', function(e) {
             var target = e.target.closest('[data-plyr="fullscreen"], .plyr__control[data-plyr="fullscreen"]');
             if (target) {
@@ -163,13 +161,9 @@
     // ============================================================
     // 3. ЗАПУСК
     // ============================================================
-    // Загружаем CSS
     loadFromCacheOrNetwork(CSS_URL, true);
-
-    // ✅ Загружаем все JS-файлы из массива (последовательно, в указанном порядке)
     JS_URLS.forEach(url => loadFromCacheOrNetwork(url, false));
 
-    // Настраиваем ориентацию после загрузки DOM
     if (document.readyState === 'complete') {
         setupOrientationControl();
     } else {

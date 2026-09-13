@@ -4,6 +4,7 @@ import android.content.pm.ActivityInfo
 import android.graphics.Outline
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.button.MaterialButton
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoView
@@ -28,10 +30,15 @@ class MainFragment : Fragment() {
     private lateinit var tabsButton: Button
     private lateinit var backButton: Button
     private lateinit var addTabButton: Button
+    private lateinit var scrubberSideButton: MaterialButton
     private lateinit var urlBar: View
     private lateinit var navBar: View
 
     private lateinit var viewModel: TabsViewModel
+
+    companion object {
+        private const val TAG = "Sollor"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,6 +55,7 @@ class MainFragment : Fragment() {
         tabsButton = view.findViewById(R.id.tabsButton)
         backButton = view.findViewById(R.id.backButton)
         addTabButton = view.findViewById(R.id.addTabButton)
+        scrubberSideButton = view.findViewById(R.id.scrubberSideButton)
         urlBar = view.findViewById(R.id.urlBar)
         navBar = view.findViewById(R.id.navBar)
 
@@ -90,18 +98,17 @@ class MainFragment : Fragment() {
         }
 
         // ============================================================
-        // КНОПКА + (НОВАЯ ВКЛАДКА)
+        // НОВАЯ ВКЛАДКА
         // ============================================================
         addTabButton.setOnClickListener {
             val runtime = (requireActivity() as? MainActivity)?.runtime
             if (runtime != null) {
-                viewModel.createTab(null, runtime) // Создаст вкладку с домашней страницей (задано в TabsViewModel)
-                // Если вы хотите, чтобы открывалась конкретная страница, передайте её вместо null
+                viewModel.createTab(null, runtime)
             }
         }
 
         // ============================================================
-        // КНОПКА "ВКЛАДКИ"
+        // ВКЛАДКИ
         // ============================================================
         tabsButton.setOnClickListener {
             val tabsFragment = TabsFragment()
@@ -109,6 +116,21 @@ class MainFragment : Fragment() {
                 .replace(R.id.fragmentContainer, tabsFragment)
                 .addToBackStack(null)
                 .commit()
+        }
+
+        // ============================================================
+        // ПЕРЕКЛЮЧЕНИЕ СТОРОНЫ СКРАББЕРА
+        // ============================================================
+        scrubberSideButton.setOnClickListener {
+            val activity = requireActivity() as? MainActivity
+            if (activity == null) {
+                Log.w(TAG, "MainActivity недоступна")
+                return@setOnClickListener
+            }
+            val ok = activity.toggleScrubberSide()
+            if (!ok) {
+                Toast.makeText(requireContext(), "Расширение ещё не готово", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // ============================================================
@@ -141,7 +163,6 @@ class MainFragment : Fragment() {
     }
 
     private fun attachDelegates(session: GeckoSession, index: Int) {
-        // ProgressDelegate – обновление URL
         session.progressDelegate = object : GeckoSession.ProgressDelegate {
             override fun onPageStart(session: GeckoSession, url: String) {
                 urlInput.setText(url)
@@ -150,7 +171,6 @@ class MainFragment : Fragment() {
             override fun onPageStop(session: GeckoSession, success: Boolean) {}
         }
 
-        // NavigationDelegate – перехват новых окон
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onNewSession(session: GeckoSession, uri: String): GeckoResult<GeckoSession> {
                 val runtime = (requireActivity() as? MainActivity)?.runtime
@@ -161,7 +181,6 @@ class MainFragment : Fragment() {
             }
         }
 
-        // ContentDelegate – полноэкранный режим
         session.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
                 if (fullScreen) {

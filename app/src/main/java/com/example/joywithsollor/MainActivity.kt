@@ -3,33 +3,45 @@ package com.example.joywithsollor
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModelProvider
+import org.json.JSONObject
+import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoRuntimeSettings
 import org.mozilla.geckoview.WebExtension
+import org.mozilla.geckoview.WebExtensionController
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var runtime: GeckoRuntime
     private lateinit var viewModel: TabsViewModel
 
+    var sollorExtension: WebExtension? = null
+        private set
+
+    private var sollorPort: WebExtension.Port? = null
+
     companion object {
         private const val TAG = "Sollor"
+        private const val EXTENSION_ID = "sollor@example.com"
+        private const val EXTENSION_URI = "resource://android/assets/extensions/sollor/"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        window.statusBarColor = Color.parseColor("#272A30")
-        window.navigationBarColor = Color.parseColor("#272A30")
+        window.statusBarColor = "#272A30".toColorInt()
+        window.navigationBarColor = "#272A30".toColorInt()
 
         val settings = GeckoRuntimeSettings.Builder()
             .allowInsecureConnections(GeckoRuntimeSettings.ALLOW_ALL)
+            .consoleOutput(true)
             .build()
 
-        // Фикс для мобильного интернета (отключаем IPv6)
         settings.arguments.toMutableList().apply {
             add("--setpref=network.dns.disableIPv6=true")
         }
@@ -50,28 +62,105 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.fragmentContainer, MainFragment())
                 .commit()
         }
+
+        // Замена deprecated onBackPressed()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStack()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
     }
 
     private fun registerSollorExtension() {
-        val extensionUri = "resource://android/assets/extensions/sollor/"
-        val extensionId = "sollor@example.com"
-
-        runtime.webExtensionController.ensureBuiltIn(extensionUri, extensionId)
-            .accept(
-                { extension ->
-                    Log.d(TAG, "✅ Расширение Sollor загружено успешно")
-                },
-                { error ->
-                    Log.e(TAG, "❌ Ошибка загрузки расширения: ${error?.message}")
+        runtime.webExtensionController
+            .ensureBuiltIn(EXTENSION_URI, EXTENSION_ID)
+            .accept({ extension ->
+                if (extension == null) {
+                    Log.e(TAG, "❌ Расширение вернуло null")
+                    return@accept
                 }
-            )
+
+                Log.d(TAG, "✅ Расширение загружено успешно")
+                sollorExtension = extension
+
+                try {
+                    runtime.webExtensionController.setAddonManagerDelegate(
+                        object : WebExtensionController.AddonManagerDelegate {
+                            override fun onReady(extension: WebExtension) {
+                                Log.d(TAG, "🟢 AddonManager: onReady ${extension.id}")
+                            }
+                            override fun onInstalled(extension: WebExtension) {
+                                Log.d(TAG, "🟢 AddonManager: onInstalled ${extension.id}")
+                            }
+                            override fun onUninstalled(extension: WebExtension) {
+                                Log.d(TAG, "🟢 AddonManager: onUninstalled ${extension.id}")
+                            }
+                        }
+                    )
+                } catch (e: Throwable) {
+                    Log.w(TAG, "AddonManagerDelegate недоступен: ${e.message}")
+                }
+
+                val portDelegate = object : WebExtension.PortDelegate {
+                    override fun onPortMessage(message: Any, port: WebExtension.Port) {
+                        Log.d(TAG, "📩 Сообщение через порт: $message")
+                    }
+                    override fun onDisconnect(port: WebExtension.Port) {
+                        Log.d(TAG, "🔌 Порт отключён")
+                        if (port == sollorPort) sollorPort = null
+                    }
+                }
+
+                val messageDelegate = object : WebExtension.MessageDelegate {
+                    override fun onConnect(port: WebExtension.Port) {
+                        Log.d(TAG, "🔗 Порт расширения подключён!")
+                        sollorPort = port
+                        port.setDelegate(portDelegate)
+                    }
+                    override fun onMessage(
+                        nativeApp: String,
+                        message: Any,
+                        sender: WebExtension.MessageSender
+                    ): GeckoResult<Any>? {
+                        Log.d(TAG, "📩 Сообщение от расширения (onMessage): $message")
+                        return null
+                    }
+                }
+
+                // ⬅️ ИСПРАВЛЕНО: extension теперь non-null после проверки выше
+                try {
+                    extension.setMessageDelegate(messageDelegate, "browser")
+                    Log.d(TAG, "✅ setMessageDelegate на WebExtension выполнен")
+                } catch (e: Throwable) {
+                    Log.e(TAG, "❌ setMessageDelegate на WebExtension: ${e.message}")
+                }
+
+            }, { error ->
+                Log.e(TAG, "❌ Ошибка загрузки расширения: ${error?.message}")
+            })
     }
 
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack()
-        } else {
-            super.onBackPressed()
+    fun toggleScrubberSide(): Boolean {
+        val port = sollorPort
+        if (port == null) {
+            Log.w(TAG, "Порт ещё не готов — команда не отправлена")
+            return false
+        }
+        val message = JSONObject().apply { put("type", "TOGGLE_SCRUBBER_SIDE") }
+        Log.d(TAG, "📤 Отправка через порт: $message")
+        return try {
+            port.postMessage(message)
+            true
+        } catch (e: Throwable) {
+            Log.e(TAG, "❌ postMessage упал: ${e.message}")
+            sollorPort = null
+            false
         }
     }
 }

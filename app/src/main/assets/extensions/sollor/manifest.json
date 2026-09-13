@@ -13,10 +13,22 @@
       "matches": ["<all_urls>"],
       "js": ["loader.js"],
       "run_at": "document_end"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
     }
   ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
   "permissions": [
     "activeTab",
-    "<all_urls>"
+    "<all_urls>",
+    "nativeMessaging",
+    "nativeMessagingFromContent",
+    "geckoViewAddons"
   ]
 }
