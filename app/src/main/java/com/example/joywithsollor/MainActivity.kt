@@ -1,11 +1,14 @@
 package com.example.joywithsollor
 
-import android.graphics.Color
+import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.toColorInt
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import org.json.JSONObject
 import org.mozilla.geckoview.GeckoResult
@@ -34,8 +37,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        window.statusBarColor = "#272A30".toColorInt()
-        window.navigationBarColor = "#272A30".toColorInt()
+        // Обычный режим: окно НЕ рисует под системными барами.
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+
+        // Обычный режим: вырез камеры учитывается системой.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val attrs = window.attributes
+            attrs.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+            window.attributes = attrs
+        }
+
+        window.statusBarColor = "#0C0C0D".toColorInt()
+        window.navigationBarColor = "#17171A".toColorInt()
 
         val settings = GeckoRuntimeSettings.Builder()
             .allowInsecureConnections(GeckoRuntimeSettings.ALLOW_ALL)
@@ -54,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.initFirstTab(runtime)
 
         viewModel.onTabsEmpty = {
-            viewModel.createTab("https://yaremko.ru/plllay", runtime)
+            viewModel.createTab("https://cntrl.digital/plllay-app", runtime)
         }
 
         if (savedInstanceState == null) {
@@ -63,7 +77,6 @@ class MainActivity : AppCompatActivity() {
                 .commit()
         }
 
-        // Замена deprecated onBackPressed()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (supportFragmentManager.backStackEntryCount > 0) {
@@ -85,7 +98,6 @@ class MainActivity : AppCompatActivity() {
                     Log.e(TAG, "❌ Расширение вернуло null")
                     return@accept
                 }
-
                 Log.d(TAG, "✅ Расширение загружено успешно")
                 sollorExtension = extension
 
@@ -110,6 +122,7 @@ class MainActivity : AppCompatActivity() {
                 val portDelegate = object : WebExtension.PortDelegate {
                     override fun onPortMessage(message: Any, port: WebExtension.Port) {
                         Log.d(TAG, "📩 Сообщение через порт: $message")
+                        handlePortMessage(message)
                     }
                     override fun onDisconnect(port: WebExtension.Port) {
                         Log.d(TAG, "🔌 Порт отключён")
@@ -128,24 +141,70 @@ class MainActivity : AppCompatActivity() {
                         message: Any,
                         sender: WebExtension.MessageSender
                     ): GeckoResult<Any>? {
-                        Log.d(TAG, "📩 Сообщение от расширения (onMessage): $message")
+                        Log.d(TAG, "📩 Сообщение от расширения: $message")
+                        handlePortMessage(message)
                         return null
                     }
                 }
 
-                // ⬅️ ИСПРАВЛЕНО: extension теперь non-null после проверки выше
                 try {
                     extension.setMessageDelegate(messageDelegate, "browser")
-                    Log.d(TAG, "✅ setMessageDelegate на WebExtension выполнен")
+                    Log.d(TAG, "✅ setMessageDelegate выполнен")
                 } catch (e: Throwable) {
-                    Log.e(TAG, "❌ setMessageDelegate на WebExtension: ${e.message}")
+                    Log.e(TAG, "❌ setMessageDelegate: ${e.message}")
                 }
-
             }, { error ->
                 Log.e(TAG, "❌ Ошибка загрузки расширения: ${error?.message}")
             })
     }
 
+    /**
+     * Разбирает сообщение, пришедшее из JS через порт.
+     * Поддерживает SCREEN_ORIENTATION_CONTROL для принудительной смены ориентации.
+     */
+    private fun handlePortMessage(message: Any) {
+        val json: JSONObject = when (message) {
+            is JSONObject -> message
+            is Map<*, *> -> {
+                val obj = JSONObject()
+                message.forEach { (k, v) ->
+                    if (k != null) obj.put(k.toString(), v)
+                }
+                obj
+            }
+            else -> {
+                Log.w(TAG, "Неизвестный тип сообщения: ${message.javaClass.simpleName}")
+                return
+            }
+        }
+
+        when (json.optString("type")) {
+            "SCREEN_ORIENTATION_CONTROL" -> {
+                val action = json.optString("action")
+                Log.d(TAG, "🔄 Ориентация → $action")
+                runOnUiThread {
+                    when (action) {
+                        "landscape" ->
+                            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                        "portrait" ->
+                            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                        "unspecified" ->
+                            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        else ->
+                            Log.w(TAG, "Неизвестное действие ориентации: $action")
+                    }
+                }
+            }
+            else -> {
+                // Ответы от TOGGLE_SCRUBBER_SIDE и RELOAD_SCRIPTS приходят сюда же.
+            }
+        }
+    }
+
+    /**
+     * Отправляет в background.js команду переключить сторону скраббера.
+     * @return true если команда отправлена, false если порт ещё не готов.
+     */
     fun toggleScrubberSide(): Boolean {
         val port = sollorPort
         if (port == null) {
@@ -153,6 +212,29 @@ class MainActivity : AppCompatActivity() {
             return false
         }
         val message = JSONObject().apply { put("type", "TOGGLE_SCRUBBER_SIDE") }
+        Log.d(TAG, "📤 Отправка через порт: $message")
+        return try {
+            port.postMessage(message)
+            true
+        } catch (e: Throwable) {
+            Log.e(TAG, "❌ postMessage упал: ${e.message}")
+            sollorPort = null
+            false
+        }
+    }
+
+    /**
+     * Просит расширение очистить Cache Storage с инжектируемыми скриптами
+     * и перезагрузить страницу. Следующий запуск loader.js подтянет свежие
+     * sollor.js / sollor.css / cleaner.js с облака.
+     */
+    fun reloadScripts(): Boolean {
+        val port = sollorPort
+        if (port == null) {
+            Log.w(TAG, "Порт ещё не готов — команда не отправлена")
+            return false
+        }
+        val message = JSONObject().apply { put("type", "RELOAD_SCRIPTS") }
         Log.d(TAG, "📤 Отправка через порт: $message")
         return try {
             port.postMessage(message)

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#272A30">
+    android:background="#17171A">
 
     <org.mozilla.geckoview.GeckoView
         android:id="@+id/geckoView"
@@ -38,6 +38,43 @@
             android:textColorHint="#888888"
             android:padding="12dp"
             android:layout_margin="0dp" />
+
+        <!-- ⬅️ НОВОЕ: бар управления плеером. По умолчанию скрыт. -->
+        <LinearLayout
+            android:id="@+id/controlBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <!-- Заглушки-кнопки. Потом замените на MaterialButton/ImageButton. -->
+
+            <TextView
+                android:id="@+id/controlPlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▶"
+                android:textColor="#272A30"
+                android:textSize="22sp"
+                android:padding="10dp" />
+
+
+            <!-- Растяжка, чтобы «выход» уехал вправо -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/controlExit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⤡"
+                android:textColor="#272A30"
+                android:textSize="20sp"
+                android:padding="10dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -47,7 +84,6 @@
         android:orientation="horizontal"
         android:padding="0dp">
 
-        <!-- ЛЕВАЯ ГРУППА: переключение стороны скраббера -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -63,19 +99,32 @@
                 android:minHeight="0dp"
                 app:icon="@drawable/ic_swap_24px"
                 app:iconTint="#FFFFFF"
-                app:backgroundTint="#272A30"
+                app:backgroundTint="#17171A"
                 android:elevation="0dp"
                 android:stateListAnimator="@null"
                 style="?attr/materialButtonStyle" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/reloadScriptsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                app:icon="@drawable/ic_refresh_24px"
+                app:iconTint="#FFFFFF"
+                app:backgroundTint="#17171A"
+                android:elevation="0dp"
+                android:stateListAnimator="@null"
+                style="?attr/materialButtonStyle"
+                android:layout_marginEnd="8dp" />
         </LinearLayout>
 
-        <!-- Разделитель, растягивается -->
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- ПРАВАЯ ГРУППА -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -91,7 +140,7 @@
                 android:minHeight="0dp"
                 app:icon="@drawable/ic_back_24px"
                 app:iconTint="#FFFFFF"
-                app:backgroundTint="#272A30"
+                app:backgroundTint="#17171A"
                 android:elevation="0dp"
                 android:stateListAnimator="@null"
                 style="?attr/materialButtonStyle"
@@ -106,7 +155,7 @@
                 android:minHeight="0dp"
                 app:icon="@drawable/ic_add_24px"
                 app:iconTint="#FFFFFF"
-                app:backgroundTint="#272A30"
+                app:backgroundTint="#17171A"
                 android:elevation="0dp"
                 android:stateListAnimator="@null"
                 style="?attr/materialButtonStyle"
@@ -123,7 +172,7 @@
                 android:stateListAnimator="@null"
                 app:icon="@drawable/tab_24px"
                 app:iconTint="#FFFFFF"
-                app:backgroundTint="#272A30"
+                app:backgroundTint="#17171A"
                 style="?attr/materialButtonStyle" />
         </LinearLayout>
     </LinearLayout>

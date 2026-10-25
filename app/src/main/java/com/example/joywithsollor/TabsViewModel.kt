@@ -20,7 +20,7 @@ class TabsViewModel : ViewModel() {
     fun initFirstTab(runtime: GeckoRuntime) {
         if (_tabs.value.isNullOrEmpty()) {
             // ЗАМЕНИТЕ НА ВАШУ СТРАНИЦУ
-            createTab("https://yaremko.ru/plllay", runtime)
+            createTab("https://cntrl.digital/plllay-app", runtime)
         }
     }
 

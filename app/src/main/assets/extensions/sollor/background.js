@@ -19,6 +19,13 @@ function sendToggleToTab() {
     return browser.tabs.sendMessage(activeTabId, { type: 'TOGGLE_SIDE' });
 }
 
+function sendReloadToTab() {
+    if (activeTabId == null) {
+        throw new Error('Нет зарегистрированной вкладки');
+    }
+    return browser.tabs.sendMessage(activeTabId, { type: 'RELOAD_SCRIPTS_IN_PAGE' });
+}
+
 function createNativePort() {
     closeNativePort();
     try {
@@ -28,17 +35,38 @@ function createNativePort() {
         nativePort.onMessage.addListener((message) => {
             console.log('[sollor-bg] Сообщение от Android:', message);
 
-            if (!message || message.type !== 'TOGGLE_SCRUBBER_SIDE') return;
+            if (!message) return;
 
-            sendToggleToTab()
-                .then(response => {
-                    console.log('[sollor-bg] Ответ от content script:', response);
-                    try { nativePort.postMessage(response || { ok: true }); } catch (e) {}
-                })
-                .catch(error => {
-                    console.error('[sollor-bg] Ошибка:', error);
-                    try { nativePort.postMessage({ error: String(error) }); } catch (e) {}
-                });
+            // --- Переключение стороны скраббера ---
+            if (message.type === 'TOGGLE_SCRUBBER_SIDE') {
+                sendToggleToTab()
+                    .then(response => {
+                        console.log('[sollor-bg] Ответ от content script:', response);
+                        try { nativePort.postMessage(response || { ok: true }); } catch (e) {}
+                    })
+                    .catch(error => {
+                        console.error('[sollor-bg] Ошибка TOGGLE_SCRUBBER_SIDE:', error);
+                        try { nativePort.postMessage({ error: String(error) }); } catch (e) {}
+                    });
+                return;
+            }
+
+            // --- Очистка кэша скриптов + перезагрузка страницы ---
+            if (message.type === 'RELOAD_SCRIPTS') {
+                console.log('[sollor-bg] RELOAD_SCRIPTS → content script');
+                sendReloadToTab()
+                    .then(response => {
+                        console.log('[sollor-bg] Ответ на RELOAD_SCRIPTS:', response);
+                        try { nativePort.postMessage(response || { ok: true }); } catch (e) {}
+                    })
+                    .catch(error => {
+                        console.error('[sollor-bg] Ошибка RELOAD_SCRIPTS:', error);
+                        try { nativePort.postMessage({ error: String(error) }); } catch (e) {}
+                    });
+                return;
+            }
+
+            console.warn('[sollor-bg] Неизвестный тип сообщения:', message.type);
         });
 
         nativePort.onDisconnect.addListener(() => {
@@ -55,8 +83,9 @@ function createNativePort() {
 }
 
 // Единый обработчик runtime-сообщений:
-//   PING         — от loader.js, пересоздаёт порт
-//   REGISTER_TAB — от content.js, запоминает id вкладки
+//   PING                       — от loader.js, пересоздаёт порт
+//   REGISTER_TAB               — от content.js, запоминает id вкладки
+//   SCREEN_ORIENTATION_CONTROL — от loader.js, пересылаем в native
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message) return false;
 
@@ -75,6 +104,26 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.warn('[sollor-bg] REGISTER_TAB без sender.tab');
         }
         sendResponse({ ok: true });
+        return true;
+    }
+
+    if (message.type === 'SCREEN_ORIENTATION_CONTROL') {
+        console.log('[sollor-bg] Ориентация → native:', message.action);
+        try {
+            if (nativePort) {
+                nativePort.postMessage({
+                    type: 'SCREEN_ORIENTATION_CONTROL',
+                    action: message.action
+                });
+                sendResponse({ ok: true });
+            } else {
+                console.warn('[sollor-bg] Порт не готов, команда ориентации потеряна');
+                sendResponse({ ok: false, error: 'port not ready' });
+            }
+        } catch (e) {
+            console.error('[sollor-bg] Ошибка пересылки ориентации:', e);
+            sendResponse({ ok: false, error: String(e) });
+        }
         return true;
     }
 

@@ -16,6 +16,7 @@
         android:id="@+id/newTabButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="+ New Tab" />
+        android:background="#202020"
+        android:text="+" />
 
 </LinearLayout>

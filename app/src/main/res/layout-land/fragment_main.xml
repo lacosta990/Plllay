@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="#272A30">
+
+    <!-- ====== ОБЛАСТЬ ВИДЕО (слева, занимает всё остальное) ====== -->
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <org.mozilla.geckoview.GeckoView
+            android:id="@+id/geckoView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#202020" />
+
+        <!-- Оверлей сверху: urlBar с urlInput. При фулскрине скрывается целиком -->
+        <LinearLayout
+            android:id="@+id/urlBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:orientation="horizontal"
+            android:padding="6dp">
+
+            <EditText
+                android:id="@+id/urlInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Enter URL"
+                android:autofillHints="url"
+                android:inputType="textUri"
+                android:imeOptions="actionGo"
+                android:background="@drawable/rounded_edittext"
+                android:textColor="@color/url_text_color"
+                android:textColorHint="#888888"
+                android:padding="12dp"
+                android:layout_margin="0dp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- ====== CONTROL BAR (вертикальный, справа от видео) ====== -->
+    <LinearLayout
+        android:id="@+id/controlBar"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:padding="4dp"
+        android:visibility="gone">
+
+<!--        <TextView-->
+<!--            android:id="@+id/controlPlay"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="▶"-->
+<!--            android:textColor="#FFFFFF"-->
+<!--            android:textSize="22sp"-->
+<!--            android:padding="10dp"-->
+<!--            android:layout_marginBottom="8dp" />-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/controlExit"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="⤡"-->
+<!--            android:textColor="#FFFFFF"-->
+<!--            android:textSize="20sp"-->
+<!--            android:padding="10dp" />-->
+    </LinearLayout>
+
+    <!-- ====== NAV BAR (вертикальный, справа от controlBar) ====== -->
+    <LinearLayout
+        android:id="@+id/navBar"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:padding="4dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/scrubberSideButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            app:icon="@drawable/ic_swap_24px"
+            app:iconTint="#FFFFFF"
+            app:backgroundTint="#272A30"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
+            style="?attr/materialButtonStyle"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            app:icon="@drawable/ic_back_24px"
+            app:iconTint="#FFFFFF"
+            app:backgroundTint="#272A30"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
+            style="?attr/materialButtonStyle"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addTabButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            app:icon="@drawable/ic_add_24px"
+            app:iconTint="#FFFFFF"
+            app:backgroundTint="#272A30"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
+            style="?attr/materialButtonStyle"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tabsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            app:icon="@drawable/tab_24px"
+            app:iconTint="#FFFFFF"
+            app:backgroundTint="#272A30"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
+            style="?attr/materialButtonStyle" />
+    </LinearLayout>
+</LinearLayout>

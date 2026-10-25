@@ -4,7 +4,7 @@
 (function() {
     console.log('[Sollor] loader.js выполняется');
 
-    // ⬅️ Будим background.js, чтобы он поднял native-порт
+    // Будим background.js, чтобы он поднял native-порт
     try {
         browser.runtime.sendMessage({ type: 'PING' });
     } catch (e) {}
@@ -13,9 +13,10 @@
     const CSS_URL = 'https://storage.yandexcloud.net/sollor/injection/sollor.css';
     const JS_URLS = [
         'https://storage.yandexcloud.net/sollor/injection/sollor.js',
+        'https://storage.yandexcloud.net/sollor/injection/cutter.js',
         'https://storage.yandexcloud.net/sollor/injection/cleaner.js'
     ];
-    const CACHE_NAME = 'sollor-cache-v3'; // ⬅️ обновлено для сброса кэша
+    const CACHE_NAME = 'sollor-cache-v7'; // ⬅️ обновлено
 
     // ============================================================
     // 1. ЗАГРУЗКА CSS/JS С КЭШИРОВАНИЕМ
@@ -80,6 +81,8 @@
         console.log('[Sollor] 🔄 setupOrientationControl запущен');
 
         function sendOrientationToNative(action) {
+            // ⬅️ ДИАГНОСТИКА: видим, что функция вызвана
+            console.log('[Sollor] 📤 sendOrientationToNative вызвана с action=', action);
             try {
                 if (typeof browser !== 'undefined' && browser.runtime) {
                     browser.runtime.sendMessage({
@@ -114,12 +117,24 @@
                 var isFullscreen = !!(document.fullscreenElement ||
                                        document.webkitFullscreenElement ||
                                        document.mozFullScreenElement);
-                console.log('[Sollor] 🖥️ Fullscreen:', isFullscreen);
+
+                // ⬅️ ДИАГНОСТИКА: видим, что fullscreenchange сработал
+                console.log('[Sollor] 🖥️ fullscreenchange event:', eventName,
+                            'isFullscreen=', isFullscreen);
 
                 if (isFullscreen) {
                     var fsElement = document.fullscreenElement || document.webkitFullscreenElement || document.body;
                     var video = fsElement.querySelector('video') || document.querySelector('video');
+
                     if (video) {
+                        // ⬅️ ДИАГНОСТИКА: какие размеры у видео
+                        console.log('[Sollor] 🎬 video: ' +
+                            'videoWidth=' + video.videoWidth +
+                            ' videoHeight=' + video.videoHeight +
+                            ' clientWidth=' + video.clientWidth +
+                            ' clientHeight=' + video.clientHeight +
+                            ' isLandscape=' + isVideoLandscape(video));
+
                         if (isVideoLandscape(video)) {
                             sendOrientationToNative('landscape');
                         } else {
@@ -145,6 +160,7 @@
         document.addEventListener('click', function(e) {
             var target = e.target.closest('[data-plyr="fullscreen"], .plyr__control[data-plyr="fullscreen"]');
             if (target) {
+                console.log('[Sollor] 🖱️ Клик по кнопке Plyr fullscreen');
                 setTimeout(function() {
                     if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
                         var fsElement = document.fullscreenElement || document.webkitFullscreenElement || document.body;
