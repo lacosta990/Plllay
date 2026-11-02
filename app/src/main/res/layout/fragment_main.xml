@@ -1,179 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="#17171A">
 
-    <org.mozilla.geckoview.GeckoView
-        android:id="@+id/geckoView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:elevation="16dp"
-        android:outlineProvider="background"
-        android:background="#202020"
-        android:clipToOutline="true" />
+    <!-- Контейнер, внутри которого лежит GeckoView: градиент чёрный → #202020 -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/bg_video_gradient">
 
-    <LinearLayout
-        android:id="@+id/urlBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp"
-        android:padding="8dp">
+        <org.mozilla.geckoview.GeckoView android:id="@+id/geckoView"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:background="#202020"/>
 
-        <EditText
-            android:id="@+id/urlInput"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Enter URL"
-            android:autofillHints="url"
-            android:inputType="textUri"
-            android:imeOptions="actionGo"
-            android:background="@drawable/rounded_edittext"
-            android:textColor="@color/url_text_color"
-            android:textColorHint="#888888"
-            android:padding="12dp"
-            android:layout_margin="0dp" />
+        <!-- Строка адреса: 48dp, без нижнего паддинга, поле во всю высоту -->
+        <LinearLayout android:id="@+id/urlBar" android:layout_width="match_parent"
+            android:layout_height="56dp" android:orientation="horizontal"
+            android:background="#17171A"
+            android:paddingStart="8dp" android:paddingEnd="8dp" android:paddingTop="4dp"
+            android:paddingBottom="0dp">
+            <EditText android:id="@+id/urlInput" android:layout_width="match_parent"
+                android:layout_height="52dp" android:hint="Enter URL"
+                android:inputType="textUri" android:imeOptions="actionGo"
+                android:background="@drawable/rounded_edittext"
+                android:textColor="#FFFFFF" android:textColorHint="#888888"
+                android:paddingStart="12dp" android:paddingEnd="12dp"
+                android:paddingTop="0dp" android:paddingBottom="0dp"
+                android:gravity="center_vertical" android:maxLines="1"/>
+        </LinearLayout>
 
-        <!-- ⬅️ НОВОЕ: бар управления плеером. По умолчанию скрыт. -->
-        <LinearLayout
-            android:id="@+id/controlBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
+        <!-- Контрол-бар: 48dp, круги 40dp, иконки 24dp -->
+        <LinearLayout android:id="@+id/controlBar" android:layout_width="match_parent"
+            android:layout_height="56dp" android:orientation="horizontal"
+            android:background="#17171A"
+            android:gravity="center_vertical" android:paddingStart="4dp" android:paddingEnd="4dp"
             android:visibility="gone">
+            <ImageButton android:id="@+id/controlPlay" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_play_arrow_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Play"/>
+            <ImageButton android:id="@+id/controlRewind" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_replay_10_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Rewind"/>
+            <ImageButton android:id="@+id/controlForward" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_forward_10_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Forward"/>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"/>
+            <ImageButton android:id="@+id/controlFit" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_fit_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Fill screen"/>
+            <ImageButton android:id="@+id/controlMute" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_volume_up_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Mute"/>
+            <ImageButton android:id="@+id/controlFullscreen" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_fullscreen_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Fullscreen"/>
+        </LinearLayout>
 
-            <!-- Заглушки-кнопки. Потом замените на MaterialButton/ImageButton. -->
-
-            <TextView
-                android:id="@+id/controlPlay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="▶"
-                android:textColor="#272A30"
-                android:textSize="22sp"
-                android:padding="10dp" />
-
-
-            <!-- Растяжка, чтобы «выход» уехал вправо -->
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/controlExit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="⤡"
-                android:textColor="#272A30"
-                android:textSize="20sp"
-                android:padding="10dp" />
+        <!-- Навигация: 48dp; слева три, справа три -->
+        <LinearLayout android:id="@+id/navBar" android:layout_width="match_parent"
+            android:layout_height="56dp" android:orientation="horizontal"
+            android:gravity="center_vertical" android:background="#17171A"
+            android:paddingStart="4dp" android:paddingEnd="4dp">
+            <ImageButton android:id="@+id/scrubberSideButton" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_swap_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Scrubber side"/>
+            <ImageButton android:id="@+id/reloadScriptsButton" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_download_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Reload scripts"/>
+            <ImageButton android:id="@+id/barsToggleButton" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_dot_white_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Hide bars"/>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"/>
+            <ImageButton android:id="@+id/backButton" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_back_24px" app:tint="@color/back_icon_tint"
+                android:scaleType="centerInside" android:enabled="false"
+                android:contentDescription="Back"/>
+            <ImageButton android:id="@+id/addTabButton" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_add_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="New tab"/>
+            <ImageButton android:id="@+id/tabsButton" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/tab_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Tabs"/>
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/navBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="0dp">
+    <FrameLayout android:id="@+id/scrubberOverlay" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:visibility="gone">
+        <com.example.joywithsollor.ScrubberView android:id="@+id/scrubberView"
+            android:layout_width="56dp" android:layout_height="match_parent"
+            android:layout_gravity="end"/>
+    </FrameLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="8dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/scrubberSideButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                app:icon="@drawable/ic_swap_24px"
-                app:iconTint="#FFFFFF"
-                app:backgroundTint="#17171A"
-                android:elevation="0dp"
-                android:stateListAnimator="@null"
-                style="?attr/materialButtonStyle" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/reloadScriptsButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                app:icon="@drawable/ic_refresh_24px"
-                app:iconTint="#FFFFFF"
-                app:backgroundTint="#17171A"
-                android:elevation="0dp"
-                android:stateListAnimator="@null"
-                style="?attr/materialButtonStyle"
-                android:layout_marginEnd="8dp" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginEnd="8dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/backButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                app:icon="@drawable/ic_back_24px"
-                app:iconTint="#FFFFFF"
-                app:backgroundTint="#17171A"
-                android:elevation="0dp"
-                android:stateListAnimator="@null"
-                style="?attr/materialButtonStyle"
-                android:layout_marginEnd="8dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/addTabButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                app:icon="@drawable/ic_add_24px"
-                app:iconTint="#FFFFFF"
-                app:backgroundTint="#17171A"
-                android:elevation="0dp"
-                android:stateListAnimator="@null"
-                style="?attr/materialButtonStyle"
-                android:layout_marginEnd="8dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabsButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:elevation="0dp"
-                android:stateListAnimator="@null"
-                app:icon="@drawable/tab_24px"
-                app:iconTint="#FFFFFF"
-                app:backgroundTint="#17171A"
-                style="?attr/materialButtonStyle" />
-        </LinearLayout>
-    </LinearLayout>
-</LinearLayout>
+    <!-- Кнопка возврата: чёрный круг без обводки -->
+    <ImageButton android:id="@+id/barsRestoreButton" android:layout_width="48dp"
+        android:layout_height="48dp" android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="16dp" android:background="@drawable/bg_circle_black"
+        android:src="@drawable/ic_dot_white_24px" app:tint="@color/icon_tint"
+        android:scaleType="centerInside" android:visibility="gone"
+        android:contentDescription="Show bars"/>
+</FrameLayout>

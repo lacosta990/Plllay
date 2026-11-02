@@ -1,7 +1,6 @@
 package com.example.joywithsollor
 
 import android.content.pm.ActivityInfo
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
@@ -20,12 +19,28 @@ import org.mozilla.geckoview.WebExtensionController
 class MainActivity : AppCompatActivity() {
 
     lateinit var runtime: GeckoRuntime
-    private lateinit var viewModel: TabsViewModel
-
-    var sollorExtension: WebExtension? = null
-        private set
+    lateinit var viewModel: TabsViewModel
 
     private var sollorPort: WebExtension.Port? = null
+    var onVideoError: ((String) -> Unit)? = null
+
+    /** Вкладка, чьё состояние видео сейчас считается активным. */
+    var activeMediaTabId: Long = -1L
+
+    /** Отправить команду конкретной вкладке (или активной, если tabId < 0). */
+    fun sendTabCommand(action: String, value: Float?, tabId: Long, frameId: Int = -1): Boolean {
+        val port = sollorPort ?: return false
+        return try {
+            port.postMessage(JSONObject().apply {
+                put("type", "TOGGLE_VIDEO")
+                put("action", action)
+                if (value != null) put("value", value.toDouble())
+                if (tabId >= 0) put("tabId", tabId)
+                if (frameId >= 0) put("frameId", frameId)
+            })
+            true
+        } catch (e: Throwable) { sollorPort = null; false }
+    }
 
     companion object {
         private const val TAG = "Sollor"
@@ -35,41 +50,41 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "ACTIVITY_CREATE savedInstanceState=" + (savedInstanceState != null))
         setContentView(R.layout.activity_main)
 
-        // Обычный режим: окно НЕ рисует под системными барами.
         WindowCompat.setDecorFitsSystemWindows(window, true)
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF000000.toInt()))
+        window.statusBarColor = "#000000".toColorInt()
+        window.navigationBarColor = "#17171A".toColorInt()
+        val ic = WindowCompat.getInsetsController(window, window.decorView)
+        ic.isAppearanceLightStatusBars = false
+        ic.isAppearanceLightNavigationBars = false
 
-        // Обычный режим: вырез камеры учитывается системой.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             val attrs = window.attributes
             attrs.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
             window.attributes = attrs
         }
 
-        window.statusBarColor = "#0C0C0D".toColorInt()
-        window.navigationBarColor = "#17171A".toColorInt()
-
         val settings = GeckoRuntimeSettings.Builder()
             .allowInsecureConnections(GeckoRuntimeSettings.ALLOW_ALL)
             .consoleOutput(true)
+            .preferredColorScheme(GeckoRuntimeSettings.COLOR_SCHEME_DARK)
             .build()
-
         settings.arguments.toMutableList().apply {
             add("--setpref=network.dns.disableIPv6=true")
+            add("--setpref=layout.css.prefers-color-scheme.content-override=0")
+            add("--setpref=ui.systemUsesDarkTheme=1")
         }
 
         runtime = GeckoRuntime.create(this, settings)
-
         registerSollorExtension()
 
         viewModel = ViewModelProvider(this).get(TabsViewModel::class.java)
         viewModel.initFirstTab(runtime)
-
-        viewModel.onTabsEmpty = {
-            viewModel.createTab("https://cntrl.digital/plllay-app", runtime)
-        }
+        viewModel.onTabsEmpty = { viewModel.createTab(TabsViewModel.HOME_URL, runtime) }
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
@@ -82,167 +97,163 @@ class MainActivity : AppCompatActivity() {
                 if (supportFragmentManager.backStackEntryCount > 0) {
                     supportFragmentManager.popBackStack()
                 } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
-                    isEnabled = true
+                    val session = viewModel.getActiveTab()?.session
+                    if (session != null && GeckoSessionHelper.canGoBack(session)) {
+                        session.goBack()
+                    } else {
+                        isEnabled = false
+                        onBackPressedDispatcher.onBackPressed()
+                        isEnabled = true
+                    }
                 }
             }
         })
     }
 
     private fun registerSollorExtension() {
-        runtime.webExtensionController
-            .ensureBuiltIn(EXTENSION_URI, EXTENSION_ID)
-            .accept({ extension ->
-                if (extension == null) {
-                    Log.e(TAG, "❌ Расширение вернуло null")
+        runtime.webExtensionController.ensureBuiltIn(EXTENSION_URI, EXTENSION_ID)
+            .accept({ ext ->
+                if (ext == null) {
+                    Log.e(TAG, "Расширение не загрузилось")
                     return@accept
                 }
-                Log.d(TAG, "✅ Расширение загружено успешно")
-                sollorExtension = extension
-
-                try {
-                    runtime.webExtensionController.setAddonManagerDelegate(
-                        object : WebExtensionController.AddonManagerDelegate {
-                            override fun onReady(extension: WebExtension) {
-                                Log.d(TAG, "🟢 AddonManager: onReady ${extension.id}")
-                            }
-                            override fun onInstalled(extension: WebExtension) {
-                                Log.d(TAG, "🟢 AddonManager: onInstalled ${extension.id}")
-                            }
-                            override fun onUninstalled(extension: WebExtension) {
-                                Log.d(TAG, "🟢 AddonManager: onUninstalled ${extension.id}")
-                            }
-                        }
-                    )
-                } catch (e: Throwable) {
-                    Log.w(TAG, "AddonManagerDelegate недоступен: ${e.message}")
-                }
-
                 val portDelegate = object : WebExtension.PortDelegate {
                     override fun onPortMessage(message: Any, port: WebExtension.Port) {
-                        Log.d(TAG, "📩 Сообщение через порт: $message")
                         handlePortMessage(message)
                     }
                     override fun onDisconnect(port: WebExtension.Port) {
-                        Log.d(TAG, "🔌 Порт отключён")
                         if (port == sollorPort) sollorPort = null
                     }
                 }
-
-                val messageDelegate = object : WebExtension.MessageDelegate {
+                val msgDelegate = object : WebExtension.MessageDelegate {
                     override fun onConnect(port: WebExtension.Port) {
-                        Log.d(TAG, "🔗 Порт расширения подключён!")
                         sollorPort = port
                         port.setDelegate(portDelegate)
+                        Log.d(TAG, "Порт расширения подключён")
                     }
                     override fun onMessage(
                         nativeApp: String,
                         message: Any,
                         sender: WebExtension.MessageSender
                     ): GeckoResult<Any>? {
-                        Log.d(TAG, "📩 Сообщение от расширения: $message")
                         handlePortMessage(message)
                         return null
                     }
                 }
-
-                try {
-                    extension.setMessageDelegate(messageDelegate, "browser")
-                    Log.d(TAG, "✅ setMessageDelegate выполнен")
-                } catch (e: Throwable) {
-                    Log.e(TAG, "❌ setMessageDelegate: ${e.message}")
-                }
-            }, { error ->
-                Log.e(TAG, "❌ Ошибка загрузки расширения: ${error?.message}")
-            })
+                ext.setMessageDelegate(msgDelegate, "browser")
+            }, { error -> Log.e(TAG, "Ошибка расширения: ${error?.message}") })
     }
 
-    /**
-     * Разбирает сообщение, пришедшее из JS через порт.
-     * Поддерживает SCREEN_ORIENTATION_CONTROL для принудительной смены ориентации.
-     */
     private fun handlePortMessage(message: Any) {
-        val json: JSONObject = when (message) {
+        val json = when (message) {
             is JSONObject -> message
-            is Map<*, *> -> {
-                val obj = JSONObject()
-                message.forEach { (k, v) ->
-                    if (k != null) obj.put(k.toString(), v)
-                }
-                obj
+            is Map<*, *> -> JSONObject().apply {
+                message.forEach { (k, v) -> if (k != null) put(k.toString(), v) }
             }
-            else -> {
-                Log.w(TAG, "Неизвестный тип сообщения: ${message.javaClass.simpleName}")
-                return
-            }
+            else -> return
         }
 
         when (json.optString("type")) {
             "SCREEN_ORIENTATION_CONTROL" -> {
                 val action = json.optString("action")
-                Log.d(TAG, "🔄 Ориентация → $action")
+                Log.d(TAG, "[DIAG] ориентация из страницы: $action")
                 runOnUiThread {
                     when (action) {
-                        "landscape" ->
-                            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                        "portrait" ->
-                            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                        "unspecified" ->
-                            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                        else ->
-                            Log.w(TAG, "Неизвестное действие ориентации: $action")
+                        "landscape" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                        "portrait" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                        "unspecified" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                     }
                 }
             }
-            else -> {
-                // Ответы от TOGGLE_SCRUBBER_SIDE и RELOAD_SCRIPTS приходят сюда же.
+            "FULLSCREEN_STATE" -> {
+                val fs = json.optBoolean("fullscreen", false)
+                Log.d(TAG, "[DIAG] FULLSCREEN_STATE=$fs")
+                if (!fs) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                runOnUiThread {
+                    (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? MainFragment)
+                        ?.setPageFullscreen(fs)
+                }
+            }
+            "VIDEO_SCROLL" -> {
+                val scrolling = json.optBoolean("scrolling", false)
+                runOnUiThread {
+                    (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? MainFragment)
+                        ?.onPageScroll(scrolling)
+                }
+            }
+            "VIDEO_INFO" -> {
+                val tabId = json.optLong("tabId", -1L)
+                val frameId = json.optInt("frameId", -1)
+                val data = json.optJSONObject("data") ?: json
+                runOnUiThread {
+                    (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? MainFragment)
+                        ?.onVideoInfo(data, tabId, frameId)
+                }
+            }
+            "VIDEO_STATE" -> {
+                if (json.has("error")) onVideoError?.invoke(json.optString("error"))
+                else {
+                    val st = json.optJSONObject("state")
+                    val paused = if (st != null && st.has("paused")) st.optBoolean("paused") else null
+                    val muted = if (st != null && st.has("muted")) st.optBoolean("muted") else null
+                    (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? MainFragment)
+                        ?.onVideoState(paused, muted)
+                }
             }
         }
     }
 
-    /**
-     * Отправляет в background.js команду переключить сторону скраббера.
-     * @return true если команда отправлена, false если порт ещё не готов.
-     */
-    fun toggleScrubberSide(): Boolean {
-        val port = sollorPort
-        if (port == null) {
-            Log.w(TAG, "Порт ещё не готов — команда не отправлена")
+    fun sendVideoValue(action: String, value: Float): Boolean {
+        val port = sollorPort ?: return false
+        return try {
+            port.postMessage(JSONObject().apply {
+                put("type", "TOGGLE_VIDEO")
+                put("action", action)
+                put("value", value.toDouble())
+            })
+            true
+        } catch (e: Throwable) { sollorPort = null; false }
+    }
+
+    fun sendVideoCommand(action: String): Boolean {
+        val port = sollorPort ?: run {
+            onVideoError?.invoke("порт расширения не готов")
             return false
         }
-        val message = JSONObject().apply { put("type", "TOGGLE_SCRUBBER_SIDE") }
-        Log.d(TAG, "📤 Отправка через порт: $message")
         return try {
-            port.postMessage(message)
+            port.postMessage(JSONObject().apply {
+                put("type", "TOGGLE_VIDEO")
+                put("action", action)
+            })
             true
         } catch (e: Throwable) {
-            Log.e(TAG, "❌ postMessage упал: ${e.message}")
             sollorPort = null
+            onVideoError?.invoke("ошибка отправки: ${e.message}")
             false
         }
     }
 
-    /**
-     * Просит расширение очистить Cache Storage с инжектируемыми скриптами
-     * и перезагрузить страницу. Следующий запуск loader.js подтянет свежие
-     * sollor.js / sollor.css / cleaner.js с облака.
-     */
-    fun reloadScripts(): Boolean {
-        val port = sollorPort
-        if (port == null) {
-            Log.w(TAG, "Порт ещё не готов — команда не отправлена")
-            return false
-        }
-        val message = JSONObject().apply { put("type", "RELOAD_SCRIPTS") }
-        Log.d(TAG, "📤 Отправка через порт: $message")
+    fun toggleScrubberSide(): Boolean {
+        val port = sollorPort ?: return false
         return try {
-            port.postMessage(message)
+            port.postMessage(JSONObject().apply { put("type", "TOGGLE_SCRUBBER_SIDE") })
             true
-        } catch (e: Throwable) {
-            Log.e(TAG, "❌ postMessage упал: ${e.message}")
-            sollorPort = null
-            false
-        }
+        } catch (e: Throwable) { sollorPort = null; false }
+    }
+
+    fun reloadScripts(): Boolean {
+        val port = sollorPort ?: return false
+        return try {
+            port.postMessage(JSONObject().apply { put("type", "RELOAD_SCRIPTS") })
+            true
+        } catch (e: Throwable) { sollorPort = null; false }
+    }
+
+    fun createNewTab() { viewModel.createTab(null, runtime) }
+
+    fun goBackInActiveTab() {
+        val session = viewModel.getActiveTab()?.session ?: return
+        if (GeckoSessionHelper.canGoBack(session)) session.goBack()
+        else viewModel.closeTab(viewModel.activeIndex.value ?: 0)
     }
 }

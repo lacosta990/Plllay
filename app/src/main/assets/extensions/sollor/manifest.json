@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Sollor Player",
-  "version": "1.0",
-  "description": "Inject custom Plyr player from external source",
+  "version": "9.20",
+  "description": "Inject custom player controls",
   "applications": {
     "gecko": {
       "id": "sollor@example.com"
@@ -10,18 +10,30 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["loader.js"],
-      "run_at": "document_end"
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "loader.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": true
     },
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_end"
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": true
     }
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "background.js"
+    ],
     "persistent": true
   },
   "permissions": [

@@ -1,145 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:background="#272A30">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#17171A">
 
-    <!-- ====== ОБЛАСТЬ ВИДЕО (слева, занимает всё остальное) ====== -->
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="horizontal">
 
-        <org.mozilla.geckoview.GeckoView
-            android:id="@+id/geckoView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#202020" />
+        <FrameLayout android:id="@+id/urlBar" android:layout_width="0dp"
+            android:layout_height="match_parent" android:layout_weight="1"
+            android:background="@drawable/bg_video_gradient">
+            <org.mozilla.geckoview.GeckoView android:id="@+id/geckoView"
+                android:layout_width="match_parent" android:layout_height="match_parent"
+                android:background="#202020"/>
+        </FrameLayout>
 
-        <!-- Оверлей сверху: urlBar с urlInput. При фулскрине скрывается целиком -->
-        <LinearLayout
-            android:id="@+id/urlBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:orientation="horizontal"
-            android:padding="6dp">
+        <LinearLayout android:id="@+id/controlBar" android:layout_width="56dp"
+            android:layout_height="match_parent" android:orientation="vertical"
+            android:gravity="top" android:paddingTop="8dp" android:paddingStart="4dp"
+            android:paddingEnd="4dp" android:visibility="gone"
+            android:background="#17171A">
+            <ImageButton android:id="@+id/controlPlay" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_play_arrow_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/controlForward" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_forward_10_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/controlRewind" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_replay_10_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/controlFit" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_fit_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:contentDescription="Fill screen"
+                android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/controlMute" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_volume_up_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/controlFullscreen" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_fullscreen_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside"/>
+        </LinearLayout>
 
-            <EditText
-                android:id="@+id/urlInput"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Enter URL"
-                android:autofillHints="url"
-                android:inputType="textUri"
-                android:imeOptions="actionGo"
-                android:background="@drawable/rounded_edittext"
-                android:textColor="@color/url_text_color"
-                android:textColorHint="#888888"
-                android:padding="12dp"
-                android:layout_margin="0dp" />
+        <FrameLayout android:id="@+id/navBar" android:layout_width="wrap_content"
+            android:layout_height="match_parent" android:background="#17171A">
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal" android:orientation="vertical"
+                android:gravity="center_horizontal" android:padding="4dp">
+                <ImageButton android:id="@+id/scrubberSideButton" android:layout_width="48dp"
+                    android:layout_height="48dp" android:background="@drawable/bg_circle"
+                    android:src="@drawable/ic_swap_24px" app:tint="@color/icon_tint"
+                    android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+                <ImageButton android:id="@+id/backButton" android:layout_width="48dp"
+                    android:layout_height="48dp" android:background="@drawable/bg_circle"
+                    android:src="@drawable/ic_back_24px" app:tint="@color/back_icon_tint"
+                    android:scaleType="centerInside" android:enabled="false"
+                    android:layout_marginBottom="4dp"/>
+                <ImageButton android:id="@+id/addTabButton" android:layout_width="48dp"
+                    android:layout_height="48dp" android:background="@drawable/bg_circle"
+                    android:src="@drawable/ic_add_24px" app:tint="@color/icon_tint"
+                    android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+                <ImageButton android:id="@+id/tabsButton" android:layout_width="48dp"
+                    android:layout_height="48dp" android:background="@drawable/bg_circle"
+                    android:src="@drawable/tab_24px" app:tint="@color/icon_tint"
+                    android:scaleType="centerInside"/>
+            </LinearLayout>
+            <ImageButton android:id="@+id/barsToggleButton" android:layout_width="48dp"
+                android:layout_height="48dp" android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="8dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_dot_white_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside"/>
+        </FrameLayout>
+    </LinearLayout>
+
+
+    <!-- Оверлей фулскрина в скрытом состоянии: подложка + контрол-бар -->
+    <FrameLayout android:id="@+id/fsOverlay" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:visibility="gone">
+        <View android:id="@+id/fsScrim" android:layout_width="112dp"
+            android:layout_height="match_parent" android:layout_gravity="end"/>
+        <LinearLayout android:id="@+id/fsControlBar" android:layout_width="56dp"
+            android:layout_height="match_parent" android:layout_gravity="end"
+            android:orientation="vertical" android:gravity="top"
+            android:paddingTop="8dp" android:paddingStart="4dp" android:paddingEnd="4dp">
+            <ImageButton android:id="@+id/fsPlay" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_play_arrow_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/fsForward" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_forward_10_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/fsRewind" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_replay_10_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/fsFit" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_fit_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/fsMute" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_volume_up_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside" android:layout_marginBottom="4dp"/>
+            <ImageButton android:id="@+id/fsFullscreen" android:layout_width="48dp"
+                android:layout_height="48dp" android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_fullscreen_24px" app:tint="@color/icon_tint"
+                android:scaleType="centerInside"/>
         </LinearLayout>
     </FrameLayout>
 
-    <!-- ====== CONTROL BAR (вертикальный, справа от видео) ====== -->
-    <LinearLayout
-        android:id="@+id/controlBar"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:padding="4dp"
-        android:visibility="gone">
+    <FrameLayout android:id="@+id/scrubberOverlay" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:visibility="gone">
+        <com.example.joywithsollor.ScrubberView android:id="@+id/scrubberView"
+            android:layout_width="56dp" android:layout_height="match_parent"
+            android:layout_gravity="end"/>
+    </FrameLayout>
 
-<!--        <TextView-->
-<!--            android:id="@+id/controlPlay"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="▶"-->
-<!--            android:textColor="#FFFFFF"-->
-<!--            android:textSize="22sp"-->
-<!--            android:padding="10dp"-->
-<!--            android:layout_marginBottom="8dp" />-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/controlExit"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="⤡"-->
-<!--            android:textColor="#FFFFFF"-->
-<!--            android:textSize="20sp"-->
-<!--            android:padding="10dp" />-->
-    </LinearLayout>
-
-    <!-- ====== NAV BAR (вертикальный, справа от controlBar) ====== -->
-    <LinearLayout
-        android:id="@+id/navBar"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:padding="4dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/scrubberSideButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            app:icon="@drawable/ic_swap_24px"
-            app:iconTint="#FFFFFF"
-            app:backgroundTint="#272A30"
-            android:elevation="0dp"
-            android:stateListAnimator="@null"
-            style="?attr/materialButtonStyle"
-            android:layout_marginBottom="8dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            app:icon="@drawable/ic_back_24px"
-            app:iconTint="#FFFFFF"
-            app:backgroundTint="#272A30"
-            android:elevation="0dp"
-            android:stateListAnimator="@null"
-            style="?attr/materialButtonStyle"
-            android:layout_marginBottom="8dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/addTabButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            app:icon="@drawable/ic_add_24px"
-            app:iconTint="#FFFFFF"
-            app:backgroundTint="#272A30"
-            android:elevation="0dp"
-            android:stateListAnimator="@null"
-            style="?attr/materialButtonStyle"
-            android:layout_marginBottom="8dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/tabsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            app:icon="@drawable/tab_24px"
-            app:iconTint="#FFFFFF"
-            app:backgroundTint="#272A30"
-            android:elevation="0dp"
-            android:stateListAnimator="@null"
-            style="?attr/materialButtonStyle" />
-    </LinearLayout>
-</LinearLayout>
+    <ImageButton android:id="@+id/barsRestoreButton" android:layout_width="48dp"
+        android:layout_height="48dp" android:layout_gravity="top|end"
+        android:layout_margin="16dp" android:background="@drawable/bg_circle_black"
+        android:src="@drawable/ic_dot_white_24px" app:tint="@color/icon_tint"
+        android:scaleType="centerInside" android:visibility="gone"/>
+</FrameLayout>
