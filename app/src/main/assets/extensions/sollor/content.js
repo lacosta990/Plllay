@@ -16,6 +16,34 @@ function getPageWindow() {
     }
 }
 
+// ---- Конфигурация (должна совпадать с loader.js) ----
+const CSS_URL = 'https://storage.yandexcloud.net/sollor/injection/sollor.css';
+const JS_URLS = [
+    'https://storage.yandexcloud.net/sollor/injection/sollor.js',
+    'https://storage.yandexcloud.net/sollor/injection/cutter.js',
+    'https://storage.yandexcloud.net/sollor/injection/plus.js',
+    'https://storage.yandexcloud.net/sollor/injection/cleaner.js'
+];
+const STORAGE_PREFIX = 'sollor_';
+
+function storageKey(url) {
+    return STORAGE_PREFIX + url;
+}
+
+async function fetchAndSave(url) {
+    console.log('[sollor-content] 🌐 Скачиваем:', url);
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+
+    const key = storageKey(url);
+    const obj = {};
+    obj[key] = text;
+    await browser.storage.local.set(obj);
+
+    console.log('[sollor-content] 💾 Сохранено в storage:', url, '(' + text.length + ' байт)');
+}
+
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message) return false;
 
@@ -42,42 +70,38 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             sendResponse({ side: String(side) });
         } catch (e) {
-            console.error('[sollor-content] Ошибка переключения стороны:', e);
+            console.error('[sollor-content] Ошибка переключения:', e);
             sendResponse({ error: String(e) });
         }
         return true;
     }
 
-    // --- Очистка кэша скриптов + перезагрузка страницы ---
+    // --- Скачать свежие скрипты с облака + перезагрузить страницу ---
     if (message.type === 'RELOAD_SCRIPTS_IN_PAGE') {
         (async () => {
             try {
-                // Собираем все кэши, относящиеся к sollor
-                const allKeys = await caches.keys();
-                const sollorKeys = allKeys.filter(k => k.startsWith('sollor-cache-'));
+                const urls = [CSS_URL, ...JS_URLS];
+                console.log('[sollor-content] 🔄 Обновление ' + urls.length + ' файлов');
 
-                console.log('[sollor-content] Найдены кэши для удаления:', sollorKeys);
+                for (const url of urls) {
+                    await fetchAndSave(url);
+                }
 
-                // Удаляем их все
-                await Promise.all(sollorKeys.map(k => caches.delete(k)));
+                console.log('[sollor-content] ✅ Все скрипты скачаны и сохранены. Перезагружаю страницу.');
 
-                console.log('[sollor-content] Кэши удалены, перезагружаю страницу');
+                // Отвечаем нативу ДО перезагрузки
+                sendResponse({ ok: true, count: urls.length });
 
-                // Отвечаем нативу до перезагрузки — иначе не успеет дойти
-                sendResponse({ ok: true, deleted: sollorKeys });
-
-                // Даём немного времени, чтобы ответ ушёл в порт,
-                // затем перезагружаем — loader.js запустится заново
-                // и скачает свежие скрипты с Яндекс.Облака.
+                // Даём ответу уйти, потом перезагружаем
                 setTimeout(() => {
                     location.reload();
                 }, 200);
             } catch (e) {
-                console.error('[sollor-content] Ошибка очистки кэша:', e);
+                console.error('[sollor-content] ❌ Ошибка обновления:', e);
                 sendResponse({ error: String(e) });
             }
         })();
-        return true; // асинхронный ответ
+        return true;
     }
 
     return false;

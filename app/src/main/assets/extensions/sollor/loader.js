@@ -1,10 +1,10 @@
 // ============================================================
-// ЗАГРУЗЧИК ВНЕШНИХ РЕСУРСОВ + КЭШИРОВАНИЕ + ОРИЕНТАЦИЯ
+// ЗАГРУЗЧИК ВНЕШНИХ РЕСУРСОВ + ХРАНЕНИЕ В STORAGE + ОРИЕНТАЦИЯ
 // ============================================================
 (function() {
     console.log('[Sollor] loader.js выполняется');
 
-    // Будим background.js, чтобы он поднял native-порт
+    // Будим background, чтобы поднять native-порт
     try {
         browser.runtime.sendMessage({ type: 'PING' });
     } catch (e) {}
@@ -14,42 +14,61 @@
     const JS_URLS = [
         'https://storage.yandexcloud.net/sollor/injection/sollor.js',
         'https://storage.yandexcloud.net/sollor/injection/cutter.js',
+        'https://storage.yandexcloud.net/sollor/injection/plus.js',
         'https://storage.yandexcloud.net/sollor/injection/cleaner.js'
     ];
-    const CACHE_NAME = 'sollor-cache-v7'; // ⬅️ обновлено
+    const STORAGE_PREFIX = 'sollor_';
 
-    // ============================================================
-    // 1. ЗАГРУЗКА CSS/JS С КЭШИРОВАНИЕМ
-    // ============================================================
-    async function loadFromCacheOrNetwork(url, isCss) {
+    function storageKey(url) {
+        return STORAGE_PREFIX + url;
+    }
+
+    // ---- Чтение из storage (без сети) ----
+    async function readFromStorage(url) {
         try {
-            const cache = await caches.open(CACHE_NAME);
-            const cachedResponse = await cache.match(url);
-            if (cachedResponse) {
-                console.log('[Sollor] ✅ Загружено из кэша:', url);
-                const text = await cachedResponse.text();
-                insertCode(text, isCss);
-                return;
-            }
+            const key = storageKey(url);
+            const result = await browser.storage.local.get(key);
+            return result[key] || null;
         } catch (e) {
-            console.warn('[Sollor] ⚠️ Ошибка чтения кэша:', e);
+            console.warn('[Sollor] storage.local.get ошибка:', e);
+            return null;
+        }
+    }
+
+    // ---- Запись в storage ----
+    async function writeToStorage(url, text) {
+        try {
+            const key = storageKey(url);
+            const obj = {};
+            obj[key] = text;
+            await browser.storage.local.set(obj);
+        } catch (e) {
+            console.warn('[Sollor] storage.local.set ошибка:', e);
+        }
+    }
+
+    // ---- Загрузка с облака ----
+    async function fetchFromCloud(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return await response.text();
+    }
+
+    // ---- Основная функция ----
+    async function loadAndInject(url, isCss) {
+        // 1. Пытаемся из storage — БЕЗ СЕТИ
+        const cached = await readFromStorage(url);
+        if (cached) {
+            console.log('[Sollor] ✅ Из storage:', url);
+            insertCode(cached, isCss);
+            return;
         }
 
-        console.log('[Sollor] 🌐 Загружаем из сети:', url);
+        // 2. В storage нет — качаем ОДИН РАЗ и сохраняем
+        console.log('[Sollor] 🌐 Первая загрузка с облака:', url);
         try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            const text = await response.text();
-
-            try {
-                const cache = await caches.open(CACHE_NAME);
-                cache.put(url, new Response(text, {
-                    headers: { 'Content-Type': isCss ? 'text/css' : 'application/javascript' }
-                }));
-            } catch (e) {
-                console.warn('[Sollor] ⚠️ Не удалось сохранить в кэш:', e);
-            }
-
+            const text = await fetchFromCloud(url);
+            await writeToStorage(url, text);
             insertCode(text, isCss);
         } catch (e) {
             console.error('[Sollor] ❌ Ошибка загрузки:', url, e);
@@ -75,21 +94,20 @@
     }
 
     // ============================================================
-    // 2. УПРАВЛЕНИЕ ОРИЕНТАЦИЕЙ
+    // УПРАВЛЕНИЕ ОРИЕНТАЦИЕЙ
     // ============================================================
     function setupOrientationControl() {
         console.log('[Sollor] 🔄 setupOrientationControl запущен');
 
         function sendOrientationToNative(action) {
-            // ⬅️ ДИАГНОСТИКА: видим, что функция вызвана
-            console.log('[Sollor] 📤 sendOrientationToNative вызвана с action=', action);
+            console.log('[Sollor] 📤 sendOrientationToNative action=', action);
             try {
                 if (typeof browser !== 'undefined' && browser.runtime) {
                     browser.runtime.sendMessage({
                         type: "SCREEN_ORIENTATION_CONTROL",
                         action: action
                     }).catch(function(err) {
-                        console.warn('[Sollor] ⚠️ Ошибка отправки сообщения:', err);
+                        console.warn('[Sollor] ⚠️ Ошибка отправки:', err);
                     });
                 } else {
                     window.postMessage({
@@ -97,9 +115,8 @@
                         action: action
                     }, '*');
                 }
-                console.log('[Sollor] 📤 Отправлена команда ориентации:', action);
             } catch (e) {
-                console.warn('[Sollor] ⚠️ Не удалось отправить команду:', e);
+                console.warn('[Sollor] ⚠️ Не удалось отправить:', e);
             }
         }
 
@@ -117,31 +134,23 @@
                 var isFullscreen = !!(document.fullscreenElement ||
                                        document.webkitFullscreenElement ||
                                        document.mozFullScreenElement);
-
-                // ⬅️ ДИАГНОСТИКА: видим, что fullscreenchange сработал
-                console.log('[Sollor] 🖥️ fullscreenchange event:', eventName,
-                            'isFullscreen=', isFullscreen);
+                console.log('[Sollor] 🖥️ fullscreenchange:', eventName, 'isFullscreen=', isFullscreen);
 
                 if (isFullscreen) {
                     var fsElement = document.fullscreenElement || document.webkitFullscreenElement || document.body;
                     var video = fsElement.querySelector('video') || document.querySelector('video');
-
                     if (video) {
-                        // ⬅️ ДИАГНОСТИКА: какие размеры у видео
                         console.log('[Sollor] 🎬 video: ' +
-                            'videoWidth=' + video.videoWidth +
-                            ' videoHeight=' + video.videoHeight +
-                            ' clientWidth=' + video.clientWidth +
-                            ' clientHeight=' + video.clientHeight +
+                            video.videoWidth + 'x' + video.videoHeight +
+                            ' client=' + video.clientWidth + 'x' + video.clientHeight +
                             ' isLandscape=' + isVideoLandscape(video));
-
                         if (isVideoLandscape(video)) {
                             sendOrientationToNative('landscape');
                         } else {
                             console.log('[Sollor] 📱 Вертикальное видео, ориентация не меняется');
                         }
                     } else {
-                        console.log('[Sollor] ❌ Видео не найдено, ориентация не меняется');
+                        console.log('[Sollor] ❌ Видео не найдено');
                     }
                 } else {
                     sendOrientationToNative('unspecified');
@@ -160,7 +169,6 @@
         document.addEventListener('click', function(e) {
             var target = e.target.closest('[data-plyr="fullscreen"], .plyr__control[data-plyr="fullscreen"]');
             if (target) {
-                console.log('[Sollor] 🖱️ Клик по кнопке Plyr fullscreen');
                 setTimeout(function() {
                     if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
                         var fsElement = document.fullscreenElement || document.webkitFullscreenElement || document.body;
@@ -175,10 +183,10 @@
     }
 
     // ============================================================
-    // 3. ЗАПУСК
+    // ЗАПУСК
     // ============================================================
-    loadFromCacheOrNetwork(CSS_URL, true);
-    JS_URLS.forEach(url => loadFromCacheOrNetwork(url, false));
+    loadAndInject(CSS_URL, true);
+    JS_URLS.forEach(url => loadAndInject(url, false));
 
     if (document.readyState === 'complete') {
         setupOrientationControl();

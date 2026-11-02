@@ -29,6 +29,7 @@
     "<all_urls>",
     "nativeMessaging",
     "nativeMessagingFromContent",
-    "geckoViewAddons"
+    "geckoViewAddons",
+    "storage"
   ]
 }
