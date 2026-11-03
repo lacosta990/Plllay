@@ -2,7 +2,7 @@
 (function () {
     'use strict';
 
-    const SOLLOR_VER = '9.20';
+    const SOLLOR_VER = '9.21';
     const BASE = 'https://storage.yandexcloud.net/sollor/injection';
     const CSS_URL = BASE + '/sollor.css?v=' + SOLLOR_VER;
     const JS_URLS = [

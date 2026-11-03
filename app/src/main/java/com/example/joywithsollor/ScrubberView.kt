@@ -42,7 +42,7 @@ class ScrubberView @JvmOverloads constructor(
     private val syncStaleMs = 1500L
     private val seekDebounceMs = 100L
     private val expectedToleranceSec = 0.5
-    private val expectedWindowMs = 700L
+    private val expectedWindowMs = 1500L
 
     private val tickPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
@@ -67,6 +67,7 @@ class ScrubberView @JvmOverloads constructor(
     var rate: Float = 1f
     var playing: Boolean = false
     var buffering: Boolean = false
+    var seeking: Boolean = false
     var sideLeft: Boolean = false
         set(value) { field = value; invalidate() }
 
@@ -90,9 +91,9 @@ class ScrubberView @JvmOverloads constructor(
     private var inertiaRunning = false
     private var inertiaVelocity = 0f
     private val inertiaFriction = 0.92f        // затухание за 16 мс
-    private val inertiaStopPxPerSec = 40f
-    private val inertiaMinPxPerSec = 250f
-    private val inertiaMaxPxPerSec = 6000f
+    private val inertiaStopPxPerSec = 10f
+    private val inertiaMinPxPerSec = 50f
+    private val inertiaMaxPxPerSec = 5000f
     private var lastInertiaSeekAt = 0L
     private val inertiaSeekIntervalMs = 120L
 
@@ -102,20 +103,28 @@ class ScrubberView @JvmOverloads constructor(
         val now = SystemClock.uptimeMillis()
         val exp = expectedSeek
         if (exp != null) {
-            if (now < expectedUntil && abs(sec - exp) > expectedToleranceSec) {
-                // плеер ещё не догнал нашу перемотку — не дёргаем маркер
+            if (abs(sec - exp) <= expectedToleranceSec) {
+                expectedSeek = null            // плеер догнал — доверяем ему
+            } else if (buffering || seeking) {
+                // перемотка на непробуференный участок: ждём, сколько нужно
+                expectedUntil = now + 5000L
                 return
+            } else if (now < expectedUntil) {
+                return
+            } else {
+                expectedSeek = null            // перемотка не удалась — берём как есть
             }
-            expectedSeek = null
         }
         position = sec.coerceIn(0.0, if (duration > 0) duration else sec)
         lastSyncAt = now
         invalidate()
+        scheduleFrame()   // цикл не должен умирать, если он остановился
     }
 
-    fun onPlayerFlags(isPlaying: Boolean, isBuffering: Boolean, playbackRate: Float) {
+    fun onPlayerFlags(isPlaying: Boolean, isBuffering: Boolean, playbackRate: Float, isSeeking: Boolean = false) {
         playing = isPlaying
         buffering = isBuffering
+        seeking = isSeeking
         rate = if (playbackRate > 0f) playbackRate else 1f
         lastSyncAt = SystemClock.uptimeMillis()
         scheduleFrame()
@@ -129,17 +138,13 @@ class ScrubberView @JvmOverloads constructor(
 
             if (inertiaRunning && !dragging && duration > 0.0) {
                 if (dt in 1..200) {
-                    val step = inertiaVelocity * dt / 1000f
-                    position = (position + step / pxPerSecond).coerceIn(0.0, duration)
-                    inertiaVelocity *= Math.pow(inertiaFriction.toDouble(), dt / 16.0).toFloat()
+                    val dtSec = (dt.coerceAtMost(50L)) / 1000.0
+                    position = (position + inertiaVelocity * dtSec / pxPerSecond)
+                        .coerceIn(0.0, duration)
+                    inertiaVelocity *= Math.pow(inertiaFriction.toDouble(), dtSec * 60.0).toFloat()
                     invalidate()
-                    // перемотку отправляем порциями, как в JS-версии
-                    if (now - lastInertiaSeekAt >= inertiaSeekIntervalMs) {
-                        lastInertiaSeekAt = now
-                        expectedSeek = position
-                        expectedUntil = now + expectedWindowMs
-                        onSeek?.invoke(position)
-                    }
+                    // Как в JS: во время инерции плеер не трогаем —
+                    // перемотка уходит один раз, когда движение затухло.
                 }
                 if (abs(inertiaVelocity) < inertiaStopPxPerSec) {
                     inertiaRunning = false
@@ -164,6 +169,12 @@ class ScrubberView @JvmOverloads constructor(
         }
     }
 
+    /** Разбудить кадровый цикл (после показа вью, смены вкладки и т.п.). */
+    fun resume() {
+        lastFrameAt = 0L
+        scheduleFrame()
+    }
+
     private fun scheduleFrame() {
         if (dragging || duration <= 0.0) return
         removeCallbacks(frameCallback)
@@ -172,6 +183,11 @@ class ScrubberView @JvmOverloads constructor(
 
     override fun onAttachedToWindow() { super.onAttachedToWindow(); scheduleFrame() }
     override fun onDetachedFromWindow() { removeCallbacks(frameCallback); super.onDetachedFromWindow() }
+
+    override fun onVisibilityChanged(changedView: View, visibility: Int) {
+        super.onVisibilityChanged(changedView, visibility)
+        if (visibility == VISIBLE) resume()
+    }
 
     private fun stripLeft(): Float = if (sideLeft) 0f else width - dp(56f)
 
@@ -247,12 +263,19 @@ class ScrubberView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (duration <= 0.0) return false
-        val stripStart = stripLeft()
-        if (event.x < stripStart || event.x > stripStart + dp(56f)) return false
+
+        // Полосу проверяем ТОЛЬКО при касании: дальше жест наш,
+        // даже если палец уйдёт в сторону.
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            val stripStart = stripLeft()
+            if (event.x < stripStart || event.x > stripStart + dp(56f)) return false
+        }
+
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 dragging = true
                 inertiaRunning = false
+                parent?.requestDisallowInterceptTouchEvent(true)
                 velocityTracker?.recycle()
                 velocityTracker = android.view.VelocityTracker.obtain()
                 velocityTracker?.addMovement(event)
@@ -270,9 +293,10 @@ class ScrubberView @JvmOverloads constructor(
                 scheduleSeek()
                 return true
             }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+            MotionEvent.ACTION_UP -> {
                 if (!dragging) return false
                 dragging = false
+                parent?.requestDisallowInterceptTouchEvent(false)
                 cancelSeek()
                 velocityTracker?.computeCurrentVelocity(1000)
                 val v = velocityTracker?.yVelocity ?: 0f
@@ -287,6 +311,24 @@ class ScrubberView @JvmOverloads constructor(
                     postOnAnimation(frameCallback)
                     return true
                 }
+                expectedSeek = position
+                expectedUntil = SystemClock.uptimeMillis() + expectedWindowMs
+                onSeek?.invoke(position)
+                onSeekEnd?.invoke()
+                lastFrameAt = 0L
+                scheduleFrame()
+                return true
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                if (!dragging) return false
+                dragging = false
+                inertiaRunning = false
+                parent?.requestDisallowInterceptTouchEvent(false)
+                cancelSeek()
+                velocityTracker?.recycle()
+                velocityTracker = null
+                // инерцию не запускаем: жест забрала система,
+                // но финальную перемотку применяем
                 expectedSeek = position
                 expectedUntil = SystemClock.uptimeMillis() + expectedWindowMs
                 onSeek?.invoke(position)

@@ -88,11 +88,13 @@ class MainFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity()).get(TabsViewModel::class.java)
         inflateContent(view as FrameLayout)
 
+        view?.post(scrubberWatchdog)
         viewModel.activeIndex.observe(viewLifecycleOwner) { bind(it, false) }
         viewModel.closeTick.observe(viewLifecycleOwner) { bind(viewModel.activeIndex.value ?: 0, true) }
     }
 
     override fun onDestroyView() {
+        view?.removeCallbacks(scrubberWatchdog)
         (activity as? MainActivity)?.onVideoError = null
         backCallback?.remove()
         backCallback = null
@@ -235,6 +237,20 @@ class MainFragment : Fragment() {
     /** Данные о видео из страницы: позиция, длительность, прямоугольник. */
 
     /** Скраббер в фулскрине: учитываем ширину видимых колонок (бар/навбар). */
+
+    private val scrubberWatchdog = object : Runnable {
+        override fun run() {
+            val now = System.currentTimeMillis()
+            if (lastInfoAt > 0 && now - lastInfoAt > 2500) {
+                Log.d(TAG, "scrubber STALE: нет данных " + (now - lastInfoAt) + " мс — скрываю")
+                scrubberOverlay?.visibility = View.GONE
+                scrubberView?.duration = 0.0
+                lastInfoAt = 0L
+            }
+            view?.postDelayed(this, 1000)
+        }
+    }
+
     private fun placeScrubberInFullscreen() {
         val sv = scrubberView ?: return
         val overlay = scrubberOverlay ?: return
@@ -257,6 +273,7 @@ class MainFragment : Fragment() {
             else (containerW - p.width - barsWidth).coerceAtLeast(0)
         sv.layoutParams = p
         overlay.visibility = View.VISIBLE
+        sv.resume()
     }
 
     fun onVideoInfo(json: org.json.JSONObject, tabId: Long = -1L, frameId: Int = -1) {
@@ -303,7 +320,8 @@ class MainFragment : Fragment() {
         if (muted != null) { videoMuted = muted; renderIcons() }
         val rate = json.optDouble("rate", 1.0).toFloat()
         val buffering = json.optBoolean("buffering", false)
-        sv.onPlayerFlags(paused == false, buffering, rate)
+        val seekingFlag = json.optBoolean("seeking", false)
+        sv.onPlayerFlags(paused == false, buffering, rate, seekingFlag)
 
         if (isPageFullscreen) {
             placeScrubberInFullscreen()

@@ -13,6 +13,14 @@
             <org.mozilla.geckoview.GeckoView android:id="@+id/geckoView"
                 android:layout_width="match_parent" android:layout_height="match_parent"
                 android:background="#202020"/>
+            <EditText android:id="@+id/urlInput" android:layout_width="match_parent"
+                android:layout_height="52dp" android:layout_gravity="top"
+                android:layout_margin="8dp" android:hint="Enter URL"
+                android:inputType="textUri" android:imeOptions="actionGo"
+                android:background="@drawable/rounded_edittext"
+                android:textColor="#FFFFFF" android:textColorHint="#888888"
+                android:paddingStart="12dp" android:paddingEnd="12dp"
+                android:gravity="center_vertical" android:maxLines="1"/>
         </FrameLayout>
 
         <LinearLayout android:id="@+id/controlBar" android:layout_width="56dp"
