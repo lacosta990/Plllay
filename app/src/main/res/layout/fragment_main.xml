@@ -15,12 +15,13 @@
 
         <!-- Строка адреса: 48dp, без нижнего паддинга, поле во всю высоту -->
         <LinearLayout android:id="@+id/urlBar" android:layout_width="match_parent"
-            android:layout_height="56dp" android:orientation="horizontal"
+            android:layout_height="64dp" android:orientation="horizontal"
             android:background="#17171A"
-            android:paddingStart="8dp" android:paddingEnd="8dp" android:paddingTop="4dp"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp" android:paddingEnd="8dp" android:paddingTop="0dp"
             android:paddingBottom="0dp">
             <EditText android:id="@+id/urlInput" android:layout_width="match_parent"
-                android:layout_height="52dp" android:hint="Enter URL"
+                android:layout_height="44dp" android:hint="Enter URL"
                 android:inputType="textUri" android:imeOptions="actionGo"
                 android:background="@drawable/rounded_edittext"
                 android:textColor="#FFFFFF" android:textColorHint="#888888"
@@ -31,7 +32,7 @@
 
         <!-- Контрол-бар: 48dp, круги 40dp, иконки 24dp -->
         <LinearLayout android:id="@+id/controlBar" android:layout_width="match_parent"
-            android:layout_height="56dp" android:orientation="horizontal"
+            android:layout_height="64dp" android:orientation="horizontal"
             android:background="#17171A"
             android:gravity="center_vertical" android:paddingStart="4dp" android:paddingEnd="4dp"
             android:visibility="gone">
@@ -64,7 +65,7 @@
 
         <!-- Навигация: 48dp; слева три, справа три -->
         <LinearLayout android:id="@+id/navBar" android:layout_width="match_parent"
-            android:layout_height="56dp" android:orientation="horizontal"
+            android:layout_height="64dp" android:orientation="horizontal"
             android:gravity="center_vertical" android:background="#17171A"
             android:paddingStart="4dp" android:paddingEnd="4dp">
             <ImageButton android:id="@+id/scrubberSideButton" android:layout_width="48dp"
@@ -95,6 +96,15 @@
                 android:scaleType="centerInside" android:contentDescription="Tabs"/>
         </LinearLayout>
     </LinearLayout>
+
+
+    <FrameLayout android:id="@+id/progressOverlay" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:visibility="gone">
+        <com.example.joywithsollor.VideoProgressView android:id="@+id/videoProgress"
+            android:layout_width="4dp" android:layout_height="match_parent"
+            android:layout_gravity="end"/>
+    </FrameLayout>
+
 
     <FrameLayout android:id="@+id/scrubberOverlay" android:layout_width="match_parent"
         android:layout_height="match_parent" android:visibility="gone">

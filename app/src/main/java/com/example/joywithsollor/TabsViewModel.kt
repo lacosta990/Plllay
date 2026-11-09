@@ -37,7 +37,7 @@ class TabsViewModel : ViewModel() {
         list.add(tab)
         _tabs.value = list
         _activeIndex.value = list.size - 1
-        android.util.Log.d("Sollor", "TAB_CREATE id=" + tab.id + " url=" + target +
+        SLog.d("Sollor", "TAB_CREATE id=" + tab.id + " url=" + target +
                 " active=" + _activeIndex.value + " total=" + list.size)
         session.loadUri(target)
     }
@@ -49,8 +49,25 @@ class TabsViewModel : ViewModel() {
         list.add(tab)
         _tabs.value = list
         _activeIndex.value = list.size - 1
-        android.util.Log.d("Sollor", "TAB_CREATE id=" + tab.id + " url=" + url +
+        SLog.d("Sollor", "TAB_CREATE id=" + tab.id + " url=" + url +
                 " active=" + _activeIndex.value + " total=" + list.size + " (new session)")
+    }
+
+    /** Полностью пересоздать сессию вкладки: помогает, когда страница «умерла». */
+    fun recreateTab(index: Int, runtime: GeckoRuntime): Boolean {
+        val list = _tabs.value.orEmpty().toMutableList()
+        val old = list.getOrNull(index) ?: return false
+        val url = old.url
+        GeckoSessionHelper.forget(old.session)
+        runCatching { old.session.close() }
+        val session = GeckoSession()
+        session.open(runtime)
+        list[index] = old.copy(session = session)
+        _tabs.value = list
+        _activeIndex.value = index
+        session.loadUri(if (url.isBlank() || url == "about:blank") NEW_TAB_URL else url)
+        SLog.d("Sollor", "TAB_RECREATE id=" + old.id + " url=" + url)
+        return true
     }
 
     fun switchTab(index: Int) {

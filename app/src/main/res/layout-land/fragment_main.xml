@@ -23,10 +23,9 @@
                 android:gravity="center_vertical" android:maxLines="1"/>
         </FrameLayout>
 
-        <LinearLayout android:id="@+id/controlBar" android:layout_width="56dp"
+        <LinearLayout android:id="@+id/controlBar" android:layout_width="64dp"
             android:layout_height="match_parent" android:orientation="vertical"
-            android:gravity="top" android:paddingTop="8dp" android:paddingStart="4dp"
-            android:paddingEnd="4dp" android:visibility="gone"
+            android:gravity="top" android:padding="4dp" android:visibility="gone"
             android:background="#17171A">
             <ImageButton android:id="@+id/controlPlay" android:layout_width="48dp"
                 android:layout_height="48dp" android:background="@drawable/bg_circle"
@@ -90,9 +89,9 @@
     <!-- Оверлей фулскрина в скрытом состоянии: подложка + контрол-бар -->
     <FrameLayout android:id="@+id/fsOverlay" android:layout_width="match_parent"
         android:layout_height="match_parent" android:visibility="gone">
-        <View android:id="@+id/fsScrim" android:layout_width="112dp"
+        <View android:id="@+id/fsScrim" android:layout_width="128dp"
             android:layout_height="match_parent" android:layout_gravity="end"/>
-        <LinearLayout android:id="@+id/fsControlBar" android:layout_width="56dp"
+        <LinearLayout android:id="@+id/fsControlBar" android:layout_width="64dp"
             android:layout_height="match_parent" android:layout_gravity="end"
             android:orientation="vertical" android:gravity="top"
             android:paddingTop="8dp" android:paddingStart="4dp" android:paddingEnd="4dp">
@@ -123,10 +122,17 @@
         </LinearLayout>
     </FrameLayout>
 
+    <FrameLayout android:id="@+id/progressOverlay" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:visibility="gone">
+        <com.example.joywithsollor.VideoProgressView android:id="@+id/videoProgress"
+            android:layout_width="4dp" android:layout_height="match_parent"
+            android:layout_gravity="end"/>
+    </FrameLayout>
+
     <FrameLayout android:id="@+id/scrubberOverlay" android:layout_width="match_parent"
         android:layout_height="match_parent" android:visibility="gone">
         <com.example.joywithsollor.ScrubberView android:id="@+id/scrubberView"
-            android:layout_width="56dp" android:layout_height="match_parent"
+            android:layout_width="64dp" android:layout_height="match_parent"
             android:layout_gravity="end"/>
     </FrameLayout>
 

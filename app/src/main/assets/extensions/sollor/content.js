@@ -18,7 +18,7 @@ const VIDEO_ACTIONS = {
     'seek_frac': 'seek_frac'
 };
 
-const SOLLOR_VER = '9.21';
+const SOLLOR_VER = '9.27';
 const BASE = 'https://storage.yandexcloud.net/sollor/injection';
 const CSS_URL = BASE + '/sollor.css?v=' + SOLLOR_VER;
 const JS_URLS = [
@@ -91,7 +91,8 @@ document.addEventListener('sollor-state', (e) => {
         const data = e && e.detail ? JSON.parse(JSON.stringify(e.detail)) : null;
         if (!data) return;
         const pw0 = pageWindow();
-        if (!pw0.__sollorAttachedOnce) return;   // плеер не найден — не шлём мусор
+        // Шлём, если скрипт уже нашёл конкретный видеоэлемент.
+        if (!pw0.__sollorStateVideo) return;
 
         // Площадь видео относительно вьюпорта: по ней натив выберет владельца
         const r = data.rect || {};

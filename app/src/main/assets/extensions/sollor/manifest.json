@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Sollor Player",
-  "version": "9.21",
+  "version": "9.27",
   "description": "Inject custom player controls",
   "applications": {
     "gecko": {

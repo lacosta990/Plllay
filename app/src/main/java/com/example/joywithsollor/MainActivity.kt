@@ -24,9 +24,6 @@ class MainActivity : AppCompatActivity() {
     private var sollorPort: WebExtension.Port? = null
     var onVideoError: ((String) -> Unit)? = null
 
-    /** Вкладка, чьё состояние видео сейчас считается активным. */
-    var activeMediaTabId: Long = -1L
-
     /** Отправить команду конкретной вкладке (или активной, если tabId < 0). */
     fun sendTabCommand(action: String, value: Float?, tabId: Long, frameId: Int = -1): Boolean {
         val port = sollorPort ?: return false
@@ -48,9 +45,19 @@ class MainActivity : AppCompatActivity() {
         private const val EXTENSION_URI = "resource://android/assets/extensions/sollor/"
     }
 
+    override fun onResume() {
+        super.onResume()
+        // После возврата из фона порт расширения мог отвалиться:
+        // без него не работают ни кнопки, ни состояние видео.
+        if (sollorPort == null) {
+            SLog.d(TAG, "порт расширения потерян — переподключаю")
+            registerSollorExtension()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "ACTIVITY_CREATE savedInstanceState=" + (savedInstanceState != null))
+        SLog.d(TAG, "ACTIVITY_CREATE savedInstanceState=" + (savedInstanceState != null))
         setContentView(R.layout.activity_main)
 
         WindowCompat.setDecorFitsSystemWindows(window, true)
@@ -68,9 +75,13 @@ class MainActivity : AppCompatActivity() {
             window.attributes = attrs
         }
 
-        val settings = GeckoRuntimeSettings.Builder()
-            .allowInsecureConnections(GeckoRuntimeSettings.ALLOW_ALL)
-            .consoleOutput(true)
+        val settingsBuilder = GeckoRuntimeSettings.Builder()
+            .consoleOutput(BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG) {
+            // Только для отладки: иначе смешанный контент без предупреждений.
+            settingsBuilder.allowInsecureConnections(GeckoRuntimeSettings.ALLOW_ALL)
+        }
+        val settings = settingsBuilder
             .preferredColorScheme(GeckoRuntimeSettings.COLOR_SCHEME_DARK)
             .build()
         settings.arguments.toMutableList().apply {
@@ -129,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onConnect(port: WebExtension.Port) {
                         sollorPort = port
                         port.setDelegate(portDelegate)
-                        Log.d(TAG, "Порт расширения подключён")
+                        SLog.d(TAG, "Порт расширения подключён")
                     }
                     override fun onMessage(
                         nativeApp: String,
@@ -156,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         when (json.optString("type")) {
             "SCREEN_ORIENTATION_CONTROL" -> {
                 val action = json.optString("action")
-                Log.d(TAG, "[DIAG] ориентация из страницы: $action")
+                SLog.d(TAG, "[DIAG] ориентация из страницы: $action")
                 runOnUiThread {
                     when (action) {
                         "landscape" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -167,7 +178,7 @@ class MainActivity : AppCompatActivity() {
             }
             "FULLSCREEN_STATE" -> {
                 val fs = json.optBoolean("fullscreen", false)
-                Log.d(TAG, "[DIAG] FULLSCREEN_STATE=$fs")
+                SLog.d(TAG, "[DIAG] FULLSCREEN_STATE=$fs")
                 if (!fs) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 runOnUiThread {
                     (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? MainFragment)

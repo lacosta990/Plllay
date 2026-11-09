@@ -55,6 +55,10 @@ class ScrubberView @JvmOverloads constructor(
     }
     private val pillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xD9000000.toInt() }
     private val pillRect = RectF()
+
+    // Строка времени форматируется только при смене секунды
+    private var labelSec = -1
+    private var labelText = "0:00"
     private val markerRect = RectF()
 
     var duration: Double = 0.0
@@ -219,7 +223,7 @@ class ScrubberView @JvmOverloads constructor(
         val lastSec = ((offsetPx + half) / pxPerSecond).toInt() + 1
         val tickW = dp(tickWidthDp)
         val tickH = dp(tickHeightDp)
-        val fadeBand = usableH * 0.12f
+        val fadeBand = usableH * 0.28f
 
         for (sec in firstSec..lastSec) {
             if (sec < 0 || sec > duration) continue
@@ -231,7 +235,9 @@ class ScrubberView @JvmOverloads constructor(
                 local > usableH - fadeBand -> ((usableH - local) / fadeBand).coerceIn(0f, 1f)
                 else -> 1f
             }
-            tickPaint.alpha = (191 * fade).toInt().coerceIn(0, 255)
+            // Затухание нелинейное: к концам прозрачность нарастает быстрее
+            val shaped = Math.pow(fade.toDouble(), 1.6).toFloat()
+            tickPaint.alpha = (191 * shaped).toInt().coerceIn(0, 255)
             val tickLeft = if (sideLeft) left else right - tickW
             canvas.drawRect(tickLeft, y - tickH / 2f, tickLeft + tickW, y + tickH / 2f, tickPaint)
         }
@@ -246,7 +252,11 @@ class ScrubberView @JvmOverloads constructor(
         // Таймкод показываем, только когда пользователь взаимодействует
         if (dragging || inertiaRunning) {
             val total = position.toInt().coerceAtLeast(0)
-            val label = String.format("%d:%02d", total / 60, total % 60)
+            if (total != labelSec) {
+                labelSec = total
+                labelText = (total / 60).toString() + ":" + (total % 60).toString().padStart(2, '0')
+            }
+            val label = labelText
             val tw = textPaint.measureText(label)
             val padH = dp(8f)
             val padV = dp(6f)
