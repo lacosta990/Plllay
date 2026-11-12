@@ -10,7 +10,12 @@ playback — including players that do not like being touched.
   <img src="github/plllay_hero_black_2.png" width="100%" alt="Landscape">
 </p>
 
----
+## CNTRL experience
+
+<p align="center">
+  <img src="github/plllay_control_experience.png" width="100%" alt="Landscape">
+</p>
+
 
 ## Features
 
