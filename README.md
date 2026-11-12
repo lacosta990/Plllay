@@ -1,4 +1,4 @@
-# Plllay
+# plllay
 
 **A GeckoView-based Android browser with real video control.**
 
@@ -7,7 +7,7 @@ Canvas, overlay control bars for fullscreen, and a page-side engine that drives 
 playback — including players that do not like being touched.
 
 <p align="center">
-  <img src="github/plllay_hero_black.png" width="100%" alt="Landscape">
+  <img src="github/plllay_hero_black_2.png" width="100%" alt="Landscape">
 </p>
 
 ---
