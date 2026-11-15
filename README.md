@@ -21,9 +21,9 @@ playback — including players that do not like being touched.
 - <img src="github/plllay_control_experience.png" width="18" height="18" align="absmiddle" /> **Python** — back
 
 <p>
-  <img src="github/plllay_control_experience.png" width="16" align="absmiddle" /> <b>GitHub</b> — исходный код<br>
-  <img src="github/plllay_control_experience.png" width="16" align="absmiddle" /> <b>YouTube</b> — видеоуроки<br>
-  <img src="github/plllay_control_experience.png" width="16" align="absmiddle" /> <b>Habr</b> — статьи по проекту
+  <img src="github/icons/plllay_buttons_play_pause.png" width="24" align="absmiddle" /> — play / pause<br>
+  <img src="github/plllay_control_experience.png" width="24" align="absmiddle" /> <b>YouTube</b> — +10sec forward<br>
+  <img src="github/plllay_control_experience.png" width="24" align="absmiddle" /> <b>Habr</b> — статьи по проекту
 </p>
 
 ## Features
