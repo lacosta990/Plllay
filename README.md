@@ -16,9 +16,9 @@ playback — including players that do not like being touched.
   <img src="github/plllay_control_experience.png" width="100%" alt="Landscape">
 </p>
 
-Icons
-<img src="github/plllay_control_experience.png" width="18" height="18" align="absmiddle" /> **Python** — back
-<img src="github/plllay_control_experience.png" width="18" height="18" align="absmiddle" /> **Python** — back
+## Icons
+- <img src="github/plllay_control_experience.png" width="18" height="18" align="absmiddle" /> **Python** — back
+- <img src="github/plllay_control_experience.png" width="18" height="18" align="absmiddle" /> **Python** — back
 
 ## Features
 
