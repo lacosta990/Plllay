@@ -16,10 +16,9 @@ playback — including players that do not like being touched.
   <img src="github/plllay_control_experience.png" width="100%" alt="Landscape">
 </p>
 
-## Icons
-- <img src="github/plllay_control_experience.png" width="18" height="18" align="absmiddle" /> **Python** — back
-- <img src="github/plllay_control_experience.png" width="18" height="18" align="absmiddle" /> **Python** — back
+## Icons & actions
 
+### Control Bar
 <p>
   <img src="github/icons/plllay_buttons_play_pause.png" width="40" align="absmiddle" /> — play / pause<br>
   <img src="github/icons/plllay_buttons_10sec_forward.png" width="40" align="absmiddle" /> — 10sec forward<br>
