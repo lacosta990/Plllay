@@ -22,9 +22,10 @@ playback — including players that do not like being touched.
 <p>
   <img src="github/icons/plllay_buttons_play_pause.png" width="40" align="absmiddle" /> — play / pause<br>
   <img src="github/icons/plllay_buttons_10sec_forward.png" width="40" align="absmiddle" /> — 10sec forward<br>
-  <img src="github/icons/plllay_buttons_10sec_backward.png" width="40" align="absmiddle" /> — 10 sec back
-  <img src="github/icons/plllay_buttons_pan&scan.png" width="40" align="absmiddle" /> — pan&scan - fill screen
-  <img src="github/icons/plllay_buttons_mute.png" width="40" align="absmiddle" /> — mute
+  <img src="github/icons/plllay_buttons_10sec_backward.png" width="40" align="absmiddle" /> — 10 sec back<br>
+  <img src="github/icons/plllay_buttons_pan&scan.png" width="40" align="absmiddle" /> — pan&scan - fill screen<br>
+  <img src="github/icons/plllay_buttons_mute.png" width="40" align="absmiddle" /> — mute<br>
+  <img src="github/icons/plllay_buttons_exit_fullscreen.png" width="40" align="absmiddle" /> — exit fullscreen<br>
 </p>
 
 ## Features
