@@ -14,7 +14,9 @@ playback — including players that do not like being touched.
 
 Control experience not just video or tabs. 
 
-> According to [research by the largest streaming service](https://cpa.rip/articles/pornhub-statistics-2025), a single viewing session averages **7 to 8 web pages**.
+According to [research](https://cpa.rip/articles/pornhub-statistics-2025) by the largest streaming service, a single viewing session averages 7 to 8 web pages. Eatch time you have to swap between fullscreen video ui & ui of the browser to navigate back to the list, swap between tabs or open a new one. You do 14-16 extra taps and about 65 seconds of waiting in summery. 
+> in fullscreen mode you tap for controls to appear than exit fullscreen button. then rotation and drawser icons detection. it takes time for this micro animations
+
 
 
 <p align="center">
