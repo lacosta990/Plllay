@@ -35,7 +35,7 @@ Seen only in fullscreen mode: landscape & portraite. It replace adress bar.
 
 have different actions in fullscreen and simple mode due to behavioral patterns
 <p>
-  <img src="github/icons/plllay_buttons_swap_scrubbar.png" width="40" align="absmiddle" /> — swap scrubbar - change position<br>
+  <img src="github/icons/plllay_buttons_swap_scrubbar.png" width="40" align="absmiddle" /> — change scrubbar position left/right<br>
   <img src="github/icons/plllay_buttons_10sec_forward.png" width="40" align="absmiddle" /> — 10sec forward<br>
   <img src="github/icons/plllay_buttons_10sec_backward.png" width="40" align="absmiddle" /> — 10 sec back<br>
   <img src="github/icons/plllay_buttons_pan&scan.png" width="40" align="absmiddle" /> — pan&scan - fill screen<br>
