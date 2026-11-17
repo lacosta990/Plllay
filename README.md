@@ -45,6 +45,12 @@ have different actions in fullscreen and simple mode due to behavioral patterns
 
 ## Clear view & bars logic
 
+Most videos are at 16/9 aspect ratio but phone screens are wider. So, app layout is designed to fill up free space of letterbox either with bars or video. And it's your choice. 
+
+Thought, you always have an option to watch video in classic mod. 
+
+When you enter fullscreen and cler view video automaticly fills entire screenspace but cuts part of the video. If you dont like it, you can push 3f button bring original aspect ratio.
+
 
 ## Features
 
