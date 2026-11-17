@@ -21,6 +21,8 @@ According to [research](https://cpa.rip/articles/pornhub-statistics-2025) by the
 New layout design combines control of video and brawser at the same time without harm or cut or acsent on the video.
 So colors - are the kay.
 
+They may look not attractive - but thats the point - video shoud be in the focus - that is a professional tool for video 
+
 <p align="center">
   <img src="github/plllay_control_experience.png" width="100%" alt="Landscape">
 </p>
