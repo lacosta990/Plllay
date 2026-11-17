@@ -49,6 +49,8 @@ Most videos are at 16/9 aspect ratio but phone screens are wider. So, app layout
 
 Thought, you always have an option to watch video in classic mod. 
 
+<img src="github/plllay_clear_view_fullscreen.png" width=400 /> <img src="github/plllay_clear_view_fullscreen_3f.png" width=400 /> 
+
 When you enter fullscreen and cler view video automaticly fills entire screenspace but cuts part of the video. If you dont like it, you can push 3f button bring original aspect ratio.
 
 
