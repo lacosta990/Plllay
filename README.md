@@ -12,6 +12,11 @@ playback — including players that do not like being touched.
 
 ## CNTRL experience
 
+Control experience not just video or tabs. 
+
+> According to [research by the largest streaming service](https://cpa.rip/articles/pornhub-statistics-2025), a single viewing session averages **7 to 8 web pages**.
+
+
 <p align="center">
   <img src="github/plllay_control_experience.png" width="100%" alt="Landscape">
 </p>
