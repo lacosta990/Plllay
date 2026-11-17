@@ -43,6 +43,9 @@ have different actions in fullscreen and simple mode due to behavioral patterns
   <img src="github/icons/plllay_buttons_clear_view.png" width="40" align="absmiddle" /> — enter clear view<br>
 </p>
 
+## Clear view & bars logic
+
+
 ## Features
 
 ### Native scrubber
