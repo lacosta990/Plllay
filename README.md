@@ -40,7 +40,7 @@ have different actions in fullscreen and simple mode due to behavioral patterns
   <img src="github/icons/plllay_buttons_new_tab.png" width="40" align="absmiddle" /> new tab<br>
   <img src="github/icons/plllay_buttons_tabs.png" width="40" align="absmiddle" /> — tabs<br>
   <img src="github/icons/plllay_buttons_update_refresh.png" width="40" align="absmiddle" /> — update scripts & refresh page (long tab)<br>
-  <img src="github/icons/plllay_buttons_exit_fullscreen.png" width="40" align="absmiddle" /> — enter clear view<br>
+  <img src="github/icons/plllay_buttons_clear_view.png" width="40" align="absmiddle" /> — enter clear view<br>
 </p>
 
 ## Features
