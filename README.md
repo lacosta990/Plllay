@@ -31,7 +31,7 @@ Seen only in fullscreen mode: landscape & portraite. It replace adress bar.
   <img src="github/icons/plllay_buttons_exit_fullscreen.png" width="40" align="absmiddle" /> — exit fullscreen<br>
 </p>
 
-### Control Bar
+### Navigation Bar
 
 have different actions in fullscreen and simple mode due to behavioral patterns
 <p>
