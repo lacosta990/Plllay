@@ -15,9 +15,11 @@ playback — including players that do not like being touched.
 Control experience not just video or tabs. 
 
 According to [research](https://cpa.rip/articles/pornhub-statistics-2025) by the largest streaming service, a single viewing session averages 7 to 8 web pages. Eatch time you have to swap between fullscreen video ui & ui of the browser to navigate back to the list, swap between tabs or open a new one. You do 14-16 extra taps and about 65 seconds of waiting in summery. 
-> in fullscreen mode you tap for controls to appear than exit fullscreen button. then rotation and drawser icons detection. it takes time for this micro animations
+> in fullscreen mode you tap for controls to appear than exit fullscreen button. then rotation and drawser icons detection.
+> it takes time (and extra actions) for this actions & micro animations
 
-
+New layout design combines control of video and brawser at the same time without harm or cut or acsent on the video.
+So colors - are the kay.
 
 <p align="center">
   <img src="github/plllay_control_experience.png" width="100%" alt="Landscape">
