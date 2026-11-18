@@ -1,4 +1,4 @@
-# plllay - browser designed for video
+# plllay - onehand browser designed for video
 
 - no history
 - no data collection
