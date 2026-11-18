@@ -1,8 +1,14 @@
-# plllay
+# plllay - one-hand browser designed for video
 
-**A GeckoView-based Android browser with real video control.**
+**I did it. I created a browser that is comfortable to use with one hand, thanks to ergonomics, behavioral patterns, and a revolutionary UI.**
 
-Plllay is not a thin wrapper around a web view. It ships a native scrubber drawn on a
+- no history
+- no data collection
+- no additional requirements
+
+Based on Gecko, so you can install ad-blocker extensions.
+
+plllay is not a thin wrapper around a web view. It ships a native scrubber drawn on a
 Canvas, overlay control bars for fullscreen, and a page-side engine that drives video
 playback — including players that do not like being touched.
 
@@ -12,6 +18,17 @@ playback — including players that do not like being touched.
 
 ## CNTRL experience
 
+Control experience is not just about video or tabs.
+
+According to [research](https://cpa.rip/articles/pornhub-statistics-2025) by the largest streaming service, a single viewing session averages 7 to 8 web pages. Each time you have to switch between the fullscreen video UI and the browser UI to go back to the list, switch between tabs, or open a new one. You make 14–16 extra taps and spend about 65 seconds waiting in total.
+> In fullscreen mode, you tap for the controls to appear, then tap the exit fullscreen button. Then there is rotation and drawer icon detection.
+> It takes time (and extra actions) for these actions and micro-animations.
+
+The new layout combines video and browser controls at the same time without obstructing or cropping the video or drawing attention away from it.
+So colors are key.
+
+They may not look attractive — but that's the point: the video should be in focus. This is a professional tool for video.
+
 <p align="center">
   <img src="github/plllay_control_experience.png" width="100%" alt="Landscape">
 </p>
@@ -20,36 +37,40 @@ playback — including players that do not like being touched.
 
 ### Control Bar
 
-Seen only in fullscreen mode: landscape & portraite. It replace adress bar.
+Seen only in fullscreen mode: landscape and portrait. It replaces the address bar.
 
 <p>
   <img src="github/icons/plllay_buttons_play_pause.png" width="40" align="absmiddle" /> — play / pause<br>
   <img src="github/icons/plllay_buttons_10sec_forward.png" width="40" align="absmiddle" /> — 10 sec forward<br>
   <img src="github/icons/plllay_buttons_10sec_backward.png" width="40" align="absmiddle" /> — 10 sec back<br>
-  <img src="github/icons/plllay_buttons_pan&scan.png" width="40" align="absmiddle" /> — pan&scan - fill screen<br>
+  <img src="github/icons/plllay_buttons_pan&scan.png" width="40" align="absmiddle" /> — pan & scan — fill screen<br>
   <img src="github/icons/plllay_buttons_mute.png" width="40" align="absmiddle" /> — mute<br>
   <img src="github/icons/plllay_buttons_exit_fullscreen.png" width="40" align="absmiddle" /> — exit fullscreen<br>
 </p>
 
 ### Navigation Bar
 
-have different actions in fullscreen and simple mode due to behavioral patterns
+Has different actions in fullscreen and simple mode due to behavioral patterns.
 <p>
   <img src="github/icons/plllay_buttons_swap_scrubbar.png" width="40" align="absmiddle" /> — change scrubbar position left/right<br>
   <img src="github/icons/plllay_buttons_back.png" width="40" align="absmiddle" /> — back<br>
-  <img src="github/icons/plllay_buttons_new_tab.png" width="40" align="absmiddle" /> new tab<br>
+  <img src="github/icons/plllay_buttons_new_tab.png" width="40" align="absmiddle" /> — new tab<br>
   <img src="github/icons/plllay_buttons_tabs.png" width="40" align="absmiddle" /> — tabs<br>
-  <img src="github/icons/plllay_buttons_update_refresh.png" width="40" align="absmiddle" /> — update scripts & refresh page (long tab)<br>
+  <img src="github/icons/plllay_buttons_update_refresh.png" width="40" align="absmiddle" /> — update scripts & refresh page (long tap)<br>
   <img src="github/icons/plllay_buttons_clear_view.png" width="40" align="absmiddle" /> — enter clear view<br>
 </p>
 
 ## Clear view & bars logic
 
-Most videos are at 16/9 aspect ratio but phone screens are wider. So, app layout is designed to fill up free space of letterbox either with bars or video. And it's your choice. 
+Most videos are at a 16:9 aspect ratio, but phone screens are wider. So the app layout is designed to fill the free space of the letterbox either with bars or with video. And it's your choice.
 
-Thought, you always have an option to watch video in classic mod. 
+However, you can always watch video in classic mode.
 
-When you enter fullscreen and cler view video automaticly fills entire screenspace but cuts part of the video. If you dont like it, you can push 3f button bring original aspect ratio.
+<img src="github/plllay_clear_view_fullscreen.png" width=400 /> <img src="github/plllay_clear_view_fullscreen_3f.png" width=400 />
+
+When you enter fullscreen and clear view, the video automatically fills the entire screen space but cuts off part of the video. If you don't like it, you can press the 3f button to restore the original aspect ratio.
+
+
 
 
 ## Features
