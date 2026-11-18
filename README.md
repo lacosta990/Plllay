@@ -1,12 +1,10 @@
 # plllay - onehand browser designed for video
 
+**i did it. i created a browser comfort to use one hand due to ergonomic, behavioral patterns and revolutionary IU**
+
 - no history
 - no data collection
 - no additional requierments
-
-- yes to ergonomics
-- yes to revlitionary UI
-- yes to behavior patterns
 
 Based on Gecko, so u r wellcome addblockers extentions.
 
