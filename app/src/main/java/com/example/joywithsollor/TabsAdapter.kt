@@ -27,7 +27,7 @@ class TabsAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val tab = tabs[position]
-        holder.title.text = tab.title.ifBlank { "Новая вкладка" }
+        holder.title.text = tab.title.ifBlank { "New Tab" }
         holder.address.text = prettyUrl(tab.url)
         holder.dot.visibility = if (position == activeIndex) View.VISIBLE else View.INVISIBLE
         holder.itemView.setOnClickListener { onClick(holder.adapterPosition) }

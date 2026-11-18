@@ -71,12 +71,12 @@ class ExtensionsManager private constructor(
     }
 
     fun loadCatalog() {
-        _busy.value = "Загружаю каталог…"
+        _busy.value = "Loading catalog…"
         io.execute {
             val result = runCatching { fetch(CATALOG_URL) }
             activity.runOnUiThread {
                 result.onSuccess { parse(it) }
-                    .onFailure { _message.value = "Каталог недоступен: ${it.message}" }
+                    .onFailure { _message.value = "Catalog unavailable: ${it.message}" }
                 _busy.value = null
                 publish()
             }
@@ -100,45 +100,45 @@ class ExtensionsManager private constructor(
                 )
             }
         } catch (e: Exception) {
-            _message.value = "Ошибка каталога: ${e.message}"
+            _message.value = "Catalog error: ${e.message}"
         }
     }
 
     fun install(entryId: String) {
         val entry = catalog[entryId] ?: return
-        val url = entry.url ?: run { _message.value = "Нет URL"; return }
-        _busy.value = "Устанавливаю ${entry.name}…"
+        val url = entry.url ?: run { _message.value = "No URL"; return }
+        _busy.value = "Installing ${entry.name}…"
         controller.install(url).accept({ ext: WebExtension? ->
             _busy.value = null
-            if (ext == null) { _message.value = "Пустой ответ"; return@accept }
+            if (ext == null) { _message.value = "Empty response"; return@accept }
             installed[ext.id] = ext
-            _message.value = "${entry.name} установлено"
+            _message.value = "${entry.name} installed"
             refreshInstalled()
         }, { error: Throwable? ->
             _busy.value = null
-            _message.value = "Не установилось: ${describe(error)}"
+            _message.value = "Install failed: ${describe(error)}"
             publish()
         })
     }
 
     fun update(entryId: String) {
         val ext = installed[entryId] ?: return
-        _busy.value = "Обновляю…"
+        _busy.value = "Updating…"
         controller.update(ext).accept({ updated: WebExtension? ->
             _busy.value = null
-            _message.value = if (updated == null) "Обновлений нет" else "Обновлено"
+            _message.value = if (updated == null) "No updates" else "Updated"
             refreshInstalled()
         }, {
             _busy.value = null
-            _message.value = "Ошибка обновления"
+            _message.value = "Update failed"
             refreshInstalled()
         })
     }
 
     fun updateAll() {
         val list = installed.values.toList()
-        if (list.isEmpty()) { _message.value = "Ничего не установлено"; return }
-        _busy.value = "Проверяю обновления…"
+        if (list.isEmpty()) { _message.value = "Nothing installed"; return }
+        _busy.value = "Checking for updates…"
         var done = 0
         list.forEach { ext ->
             controller.update(ext).accept({ _: WebExtension? ->
@@ -151,15 +151,15 @@ class ExtensionsManager private constructor(
 
     fun uninstall(entryId: String) {
         val ext = installed[entryId] ?: return
-        _busy.value = "Удаляю…"
+        _busy.value = "Removing…"
         controller.uninstall(ext).accept({
             installed.remove(entryId)
             _busy.value = null
-            _message.value = "Удалено"
+            _message.value = "Deleted"
             refreshInstalled()
         }, { _: Throwable? ->
             _busy.value = null
-            _message.value = "Не удалилось"
+            _message.value = "Delete failed"
         })
     }
 
@@ -213,10 +213,10 @@ class ExtensionsManager private constructor(
     private fun describe(error: Throwable?): String {
         val code = (error as? WebExtension.InstallException)?.code
         return when (code) {
-            WebExtension.InstallException.ErrorCodes.ERROR_NETWORK_FAILURE -> "нет сети"
-            WebExtension.InstallException.ErrorCodes.ERROR_SIGNEDSTATE_REQUIRED -> "нужна подпись Mozilla"
-            WebExtension.InstallException.ErrorCodes.ERROR_INCOMPATIBLE -> "несовместимо"
-            else -> error?.message ?: "неизвестная ошибка"
+            WebExtension.InstallException.ErrorCodes.ERROR_NETWORK_FAILURE -> "no network"
+            WebExtension.InstallException.ErrorCodes.ERROR_SIGNEDSTATE_REQUIRED -> "Mozilla signature required"
+            WebExtension.InstallException.ErrorCodes.ERROR_INCOMPATIBLE -> "incompatible"
+            else -> error?.message ?: "unknown error"
         }
     }
 }

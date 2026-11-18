@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         // После возврата из фона порт расширения мог отвалиться:
         // без него не работают ни кнопки, ни состояние видео.
         if (sollorPort == null) {
-            SLog.d(TAG, "порт расширения потерян — переподключаю")
+            SLog.d(TAG, "extension port lost - reconnecting")
             registerSollorExtension()
         }
     }
@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         runtime.webExtensionController.ensureBuiltIn(EXTENSION_URI, EXTENSION_ID)
             .accept({ ext ->
                 if (ext == null) {
-                    Log.e(TAG, "Расширение не загрузилось")
+                    Log.e(TAG, "Extension failed to load")
                     return@accept
                 }
                 val portDelegate = object : WebExtension.PortDelegate {
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onConnect(port: WebExtension.Port) {
                         sollorPort = port
                         port.setDelegate(portDelegate)
-                        SLog.d(TAG, "Порт расширения подключён")
+                        SLog.d(TAG, "Extension port connected")
                     }
                     override fun onMessage(
                         nativeApp: String,
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 ext.setMessageDelegate(msgDelegate, "browser")
-            }, { error -> Log.e(TAG, "Ошибка расширения: ${error?.message}") })
+            }, { error -> Log.e(TAG, "Extension error: ${error?.message}") })
     }
 
     private fun handlePortMessage(message: Any) {
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         when (json.optString("type")) {
             "SCREEN_ORIENTATION_CONTROL" -> {
                 val action = json.optString("action")
-                SLog.d(TAG, "[DIAG] ориентация из страницы: $action")
+                SLog.d(TAG, "[DIAG] page orientation: $action")
                 runOnUiThread {
                     when (action) {
                         "landscape" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -228,7 +228,7 @@ class MainActivity : AppCompatActivity() {
 
     fun sendVideoCommand(action: String): Boolean {
         val port = sollorPort ?: run {
-            onVideoError?.invoke("порт расширения не готов")
+            onVideoError?.invoke("extension port not ready")
             return false
         }
         return try {
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
             true
         } catch (e: Throwable) {
             sollorPort = null
-            onVideoError?.invoke("ошибка отправки: ${e.message}")
+            onVideoError?.invoke("send error: ${e.message}")
             false
         }
     }

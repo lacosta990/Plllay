@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class ExtensionsAdapter(
@@ -49,9 +48,9 @@ class ExtensionsAdapter(
         val name: TextView = v.findViewById(R.id.extName)
         val version: TextView = v.findViewById(R.id.extVersion)
         val desc: TextView = v.findViewById(R.id.extDescription)
-        val install: MaterialButton = v.findViewById(R.id.extInstall)
-        val update: MaterialButton = v.findViewById(R.id.extUpdate)
-        val uninstall: MaterialButton = v.findViewById(R.id.extUninstall)
+        val install: android.widget.ImageButton = v.findViewById(R.id.extInstall)
+        val update: android.widget.ImageButton = v.findViewById(R.id.extUpdate)
+        val uninstall: android.widget.ImageButton = v.findViewById(R.id.extUninstall)
         val enabled: SwitchMaterial = v.findViewById(R.id.extEnabled)
     }
 }

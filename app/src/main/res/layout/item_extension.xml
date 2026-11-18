@@ -19,18 +19,20 @@
         android:maxLines="3" android:ellipsize="end" android:layout_marginTop="4dp"/>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="10dp">
-        <com.google.android.material.button.MaterialButton android:id="@+id/extInstall"
-            style="?attr/materialButtonStyle" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:text="Установить" android:textColor="#FFFFFF"
-            app:backgroundTint="#3A5FCD"/>
-        <com.google.android.material.button.MaterialButton android:id="@+id/extUpdate"
-            style="?attr/materialButtonStyle" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:text="Обновить" android:textColor="#FFFFFF"
-            app:backgroundTint="#2A2A2E" android:layout_marginStart="8dp"/>
-        <com.google.android.material.button.MaterialButton android:id="@+id/extUninstall"
-            style="?attr/materialButtonStyle" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:text="Удалить" android:textColor="#FFFFFF"
-            app:backgroundTint="#2A2A2E" android:layout_marginStart="8dp"/>
+        <ImageButton android:id="@+id/extInstall" android:layout_width="40dp"
+            android:layout_height="40dp" android:background="@drawable/bg_circle"
+            android:src="@drawable/ic_download_24px" app:tint="@color/icon_tint"
+            android:scaleType="centerInside" android:contentDescription="Install"/>
+        <ImageButton android:id="@+id/extUpdate" android:layout_width="40dp"
+            android:layout_height="40dp" android:background="@drawable/bg_circle"
+            android:src="@drawable/ic_refresh_24px" app:tint="@color/icon_tint"
+            android:scaleType="centerInside" android:layout_marginStart="8dp"
+            android:contentDescription="Update"/>
+        <ImageButton android:id="@+id/extUninstall" android:layout_width="40dp"
+            android:layout_height="40dp" android:background="@drawable/bg_circle"
+            android:src="@drawable/ic_delete_24px" app:tint="@color/icon_tint"
+            android:scaleType="centerInside" android:layout_marginStart="8dp"
+            android:contentDescription="Delete"/>
         <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"/>
         <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/extEnabled"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>

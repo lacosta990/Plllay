@@ -78,7 +78,7 @@ class MainFragment : Fragment() {
         super.onCreate(savedInstanceState)
         isBarsHidden = savedInstanceState?.getBoolean(KEY_HIDDEN, false) ?: false
         (activity as? MainActivity)?.onVideoError = { msg ->
-            SLog.w(TAG, "видео: " + msg)   // без системных уведомлений
+            SLog.w(TAG, "video: " + msg)   // без системных уведомлений
         }
     }
 
@@ -196,13 +196,13 @@ class MainFragment : Fragment() {
             if (activity != null && viewModel.recreateTab(idx, activity.runtime)) {
                 boundSession = null
                 bind(idx, true)
-                SLog.d(TAG, "вкладка пересоздана принудительно")
+                SLog.d(TAG, "tab recreated")
             }
             true
         }
         reloadButton?.setOnClickListener {
             if ((requireActivity() as? MainActivity)?.reloadScripts() != true)
-                SLog.w(TAG, "расширение не готово")
+                SLog.w(TAG, "extension not ready")
         }
         barsToggleButton?.setOnClickListener { setBarsHidden(true) }
         barsRestoreButton?.setOnClickListener { setBarsHidden(false) }
@@ -234,7 +234,7 @@ class MainFragment : Fragment() {
                 (requireActivity() as? MainActivity)
                     ?.sendTabCommand("seek_frac", frac.toFloat(), ownerTabId)
             } else {
-                SLog.w(TAG, "seek пропущен: duration=0")
+                SLog.w(TAG, "seek skipped: duration=0")
             }
         }
         scrubberView?.onSeekEnd = { }
@@ -262,7 +262,7 @@ class MainFragment : Fragment() {
         override fun run() {
             val now = System.currentTimeMillis()
             if (lastInfoAt > 0 && now - lastInfoAt > 2500) {
-                SLog.d(TAG, "scrubber STALE: нет данных " + (now - lastInfoAt) + " мс — скрываю")
+                SLog.d(TAG, "scrubber STALE: no data for " + (now - lastInfoAt) + " ms - hiding")
                 scrubberOverlay?.visibility = View.GONE
                 progressOverlay?.visibility = View.GONE
                 scrubberView?.duration = 0.0
@@ -842,7 +842,7 @@ class MainFragment : Fragment() {
 
         session.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onCrash(s: GeckoSession) {
-                SLog.w(TAG, "контент-процесс упал, перезагружаю вкладку")
+                SLog.w(TAG, "content process crashed, reloading tab")
                 s.reload()
             }
         }
@@ -930,7 +930,7 @@ class MainFragment : Fragment() {
         }
         val ok = (requireActivity() as? MainActivity)
             ?.sendTabCommand(action, null, ownerTabId, ownerFrameId) ?: false
-        if (!ok) SLog.w(TAG, "расширение не готово: " + action)
+        if (!ok) SLog.w(TAG, "extension not ready: " + action)
         when (action) {
             "play-pause" -> { videoPaused = (videoPaused ?: false).not(); renderIcons() }
             "mute" -> { videoMuted = (videoMuted ?: false).not(); renderIcons() }
