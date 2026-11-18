@@ -2,13 +2,13 @@
 
 **Browser designed for video**
 
-no history
-no data collection
-no additional requierments
+- no history
+- no data collection
+- no additional requierments
 
-yes to ergonomics
-yes to revlitionary UI
-yes to behavior patterns
+- yes to ergonomics
+- yes to revlitionary UI
+- yes to behavior patterns
 
 Based on Gecko, so u r wellcome addblockers extentions.
 
