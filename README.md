@@ -1,6 +1,16 @@
 # plllay
 
-**A GeckoView-based Android browser with real video control.**
+**Browser designed for video**
+
+no history
+no data collection
+no additional requierments
+
+yes to ergonomics
+yes to revlitionary UI
+yes to behavior patterns
+
+Based on Gecko, so u r wellcome addblockers extentions.
 
 Plllay is not a thin wrapper around a web view. It ships a native scrubber drawn on a
 Canvas, overlay control bars for fullscreen, and a page-side engine that drives video
