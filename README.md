@@ -1,6 +1,4 @@
-# plllay
-
-**Browser designed for video**
+# plllay - browser designed for video
 
 - no history
 - no data collection
